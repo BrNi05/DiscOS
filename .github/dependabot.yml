@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "DEPS UPDATE: "
+    labels:
+      - dependencies
+    groups:
+      core:
+        patterns:
+          - "^axios"
+          - "^discord.js"
+          - "^dotenv"
+          - "^file-type"
+          - "^shell-escape"
+      dev-deps:
+        patterns:
+          - "^eslint"
+          - "^prettier"
+          - "^@eslint"
+          - "^eslint-config-prettier"
+          - "^eslint-plugin-.*"
+          - "^typescript-eslint"
+          - "^typescript"
+          - "^ts-node"
+          - "^@types/"
