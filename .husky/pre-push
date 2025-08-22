@@ -1,0 +1,8 @@
+#!/bin/sh
+
+BRANCH=$(git symbolic-ref --short HEAD)
+
+if [ "$BRANCH" = "main" ]; then
+  echo "Permission denied! Please open a Pull Request."
+  exit 1
+fi

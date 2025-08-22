@@ -6,6 +6,9 @@ node_modules
 **/tsconfig.tsbuildinfo
 **/tsconfig.build.tsbuildinfo
 
+# ESLint cache
+.eslintcache
+
 # Logs
 logs
 *.log

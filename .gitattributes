@@ -19,3 +19,6 @@
 
 // markdown files
 *.md text eol=lf
+
+// Husky scripts
+.husky/* text eol=lf

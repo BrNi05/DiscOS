@@ -7,7 +7,10 @@
     "build": "npx tsc -b",
     "setup": "node dist/slash-commands.js",
     "start": "node dist/startup.js",
-    "dev": "npx tsc -b && node dist/startup.js"
+    "dev": "npx tsc -b && node dist/startup.js",
+    "format": "prettier --write \"**/*.{ts,json,md}\" --log-level silent",
+    "lint": "eslint . --ext .ts --cache",
+    "postinstall": "git config core.hooksPath .husky"
   },
   "keywords": [
     "discord",
@@ -41,6 +44,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.5.3",
+    "husky": "^9.1.7",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
