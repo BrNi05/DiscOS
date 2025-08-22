@@ -1,0 +1,64 @@
+name: Security Issue
+description: Report a vulnerability
+title: "[SECRUITY] "
+labels: [SECURITY]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: DiscOS version
+      description: Select which version of DiscOS are you using.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: usage
+    attributes:
+      label: Usage
+      description: Select how are you using DiscOS.
+      options:
+        - Systemd service
+        - Docker container
+        - NPM package
+        - Other (specify it below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      description: Select which backend do you use.
+      options:
+        - Standalone
+        - External backend
+    validations:
+      required: true
+
+  - type: dropdown
+    id: safemode
+    attributes:
+      label: Safe Mode
+      description: Indicate if DiscOS is running in Safe Mode.
+      options:
+        - Enabled
+        - Disabled
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the security issue
+      description: An in-depth of the vulnerability, it's impact, and how to reproduce it.
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node.js version, related network settings, etc.
+    validations:
+      required: true

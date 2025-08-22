@@ -1,0 +1,61 @@
+name: Bug Report
+description: Report something that is not working (as it should)
+title: "[BUG] "
+labels: [BUG]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: DiscOS version
+      description: Select which version of DiscOS are you using.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: usage
+    attributes:
+      label: Usage
+      description: Select how are you using DiscOS.
+      options:
+        - Systemd service
+        - Docker container
+        - NPM package
+        - Other (specify it below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      description: Select which backend do you use.
+      options:
+        - Standalone
+        - External backend
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A short but clear description of the issue.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: A detailed list of steps to reproduce the bug.
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node.js version, related network settings, etc.
+    validations:
+      required: true

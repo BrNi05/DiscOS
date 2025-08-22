@@ -1,0 +1,29 @@
+name: Feature Request
+description: Suggest a new feature or just a smaller improvement to make DiscOS better
+title: "[FEATURE]: "
+labels: [FEATURE]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Reason
+      description: "Short description: Why is this feature important to you? Why for others?"
+      placeholder: "I requested this feature because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: specification
+    attributes:
+      label: Specification
+      description: An in-depth explanation of the requested feature. How should it work? How shouldn't it?
+      placeholder: It should...
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What are the criterias the feature must meet to be considered complete?
+      placeholder: eg. DiscOS must validate x input based on...
+    validations:
+      required: true
