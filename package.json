@@ -9,7 +9,20 @@
     "start": "node dist/startup.js",
     "dev": "npx tsc -b && node dist/startup.js"
   },
-  "keywords": ["discord", "linux", "server", "bot", "ssh", "terminal", "commands", "remote", "interaction", "control", "file", "transfer"],
+  "keywords": [
+    "discord",
+    "linux",
+    "server",
+    "bot",
+    "ssh",
+    "terminal",
+    "commands",
+    "remote",
+    "interaction",
+    "control",
+    "file",
+    "transfer"
+  ],
   "author": "https://github.com/BrNi05",
   "license": "Apache-2.0",
   "description": "DiscOS is an interaction bridge between Discord and Linux servers",
@@ -32,5 +45,10 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.40.0"
-  }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ]
 }
