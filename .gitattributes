@@ -1,0 +1,21 @@
+// Shell scripts
+*.sh text eol=lf
+
+// TypeScript files
+*.ts text eol=lf
+
+// dotenv
+*.env text eol=lf
+*.env.example text eol=lf
+
+// JSON files
+*.json text eol=lf
+
+// .prettierrc files
+*.prettierrc text eol=lf
+
+// eslint config
+*.mjs text eol=lf
+
+// markdown files
+*.md text eol=lf
