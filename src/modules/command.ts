@@ -1,0 +1,72 @@
+import type { ChatInputCommandInteraction, CacheType } from 'discord.js';
+
+// Helpers
+import * as queueUtils from '../tools/queue-utils';
+import { post } from '../tools/backend';
+
+// Config file
+import { Config } from '../config';
+
+// Consts and project-scoped types
+import * as COMMON from '../common';
+
+// Repo scoped types
+import type { ICommandQueueItem } from '../shared/types/dcbot';
+
+// Load binary overrides
+const READ_BIN_OVERRIDE: string[] = Config.readBinOverride.map((bin) => `${bin} `);
+
+export async function execCommand(
+  payload: ICommandQueueItem,
+  interaction: ChatInputCommandInteraction<CacheType>,
+  userCmd: string,
+  username: string,
+  prefixChoice: number,
+  commandQueue: ICommandQueueItem[] // Used for watch commands
+): Promise<string> {
+  let replyPrefix;
+  if (prefixChoice === 0) {
+    replyPrefix = COMMON.CMD_EXEC_AS_MSG(userCmd, username); // default
+  } else if (prefixChoice === 1) {
+    replyPrefix = COMMON.CMD_EXEC_AS_MSG2(username); // watch
+    commandQueue.push(payload); // watch command is formatted, add it temporarily, so backend does not fails validation
+  }
+
+  try {
+    // Handle interactive file read/write commands
+    if (READ_BIN_OVERRIDE.some((cmd) => userCmd.includes(cmd))) {
+      const reply: string = COMMON.RW_USE_DEDICATED(replyPrefix);
+      await interaction.editReply({
+        content: reply,
+      });
+      return reply;
+    }
+    // Handle watch (interactive)
+    else if (userCmd.includes('watch ')) {
+      const reply: string = COMMON.WATCH_USE_DEDICATED(replyPrefix);
+      await interaction.editReply({
+        content: reply,
+      });
+      return reply;
+    } else {
+      const res = await post(payload, false);
+
+      const resString: string = (res.data as Buffer).toString('utf-8').trim();
+      const replyContent = resString === COMMON.BACKEND_EXEC_ERR ? COMMON.BACKEND_EXEC_ERR_OVERRIDE : resString;
+      const replyContentFormatted = `${replyPrefix}` + `${replyContent}`;
+
+      await interaction.editReply({
+        content: '```plaintext\n' + replyContentFormatted + '\n```',
+      });
+
+      return replyContent;
+    }
+  } catch {
+    await interaction.editReply({
+      content: COMMON.UNKNOWN_ERR,
+    });
+    return COMMON.UNKNOWN_ERR;
+  } finally {
+    queueUtils.tryRemoveInQueue(commandQueue, payload); // remove the temp watch command (on normal use, the payload is already removed by IPCServer on backend validation)
+  }
+}
