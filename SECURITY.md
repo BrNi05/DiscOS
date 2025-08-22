@@ -6,9 +6,9 @@ Older versions of DiscOS will generally become unsupported when a new release is
 
 Please **do not** report vulnerabilities that affect only unsupported versions of DiscOS.
 
-| Version | Supported          | End of Life  |
-| :-----: | :----------------: | :----------: |
-| 1.0.0   | :white_check_mark: | -            |
+| Version |     Supported      | End of Life |
+| :-----: | :----------------: | :---------: |
+|  1.0.0  | :white_check_mark: |      -      |
 
 ## Reporting a Vulnerability
 
