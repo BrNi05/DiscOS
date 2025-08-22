@@ -1,0 +1,36 @@
+{
+  "name": "discos",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npx tsc -b",
+    "setup": "node dist/slash-commands.js",
+    "start": "node dist/startup.js",
+    "dev": "npx tsc -b && node dist/startup.js"
+  },
+  "keywords": ["discord", "linux", "server", "bot", "ssh", "terminal", "commands", "remote", "interaction", "control", "file", "transfer"],
+  "author": "https://github.com/BrNi05",
+  "license": "Apache-2.0",
+  "description": "DiscOS is an interaction bridge between Discord and Linux servers",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "discord.js": "^14.22.1",
+    "dotenv": "^17.2.1",
+    "file-type": "^21.0.0",
+    "shell-escape": "^0.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/node": "^24.3.0",
+    "@types/shell-escape": "^0.2.3",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.5.3",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.40.0"
+  }
+}
