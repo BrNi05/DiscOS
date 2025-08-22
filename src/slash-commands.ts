@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { REST, Routes, SlashCommandBuilder } from 'discord.js';
 
 // Helpers
