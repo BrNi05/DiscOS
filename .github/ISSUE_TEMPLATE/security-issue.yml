@@ -1,6 +1,6 @@
 name: Security Issue
 description: Report a vulnerability
-title: "[SECRUITY] "
+title: "[SECURITY] "
 labels: [SECURITY]
 body:
   - type: input
