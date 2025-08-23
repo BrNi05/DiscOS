@@ -194,8 +194,7 @@ export function startDiscOS(): void {
           break;
         }
       }
-    } catch (err) {
-      console.error(COMMON.DISCOS_GENERIC_ERR, err);
+    } catch {
       await interaction.editReply({ content: COMMON.DISCOS_GENERIC_ERR2 + username + '.' });
     } finally {
       queueUtils.tryRemoveInQueue(commandQueue, payload); // removes payload if backend does not use IPCServer (which removes the payload from queue automatically)
