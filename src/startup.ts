@@ -17,6 +17,7 @@ import * as COMMON from './common';
 import type { ICommandQueueItem } from './shared/types/dcbot';
 
 // Modules
+import { registerSlashCommands } from './slash-commands';
 import { execCommand } from './modules/command';
 import { clearHistory } from './modules/clear';
 import { read, write } from './modules/file';
@@ -210,5 +211,6 @@ export function startDiscOS(): void {
 
 // Auto-start DiscOS if it is run directly with Node
 if (require.main === module) {
+  registerSlashCommands();
   startDiscOS();
 }
