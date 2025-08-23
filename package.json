@@ -14,10 +14,12 @@
   },
   "keywords": [
     "discord",
+    "discord-bot",
     "linux",
     "server",
     "bot",
     "ssh",
+    "remote-control",
     "terminal",
     "commands",
     "remote",
@@ -28,7 +30,7 @@
   ],
   "author": "https://github.com/BrNi05",
   "license": "Apache-2.0",
-  "description": "DiscOS is an interaction bridge between Discord and Linux servers",
+  "description": "DiscOS is a secure interaction bridge between Discord and Linux servers",
   "dependencies": {
     "axios": "^1.11.0",
     "discord.js": "^14.22.1",
