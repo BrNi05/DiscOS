@@ -1,0 +1,14 @@
+services:
+  SERVICE_NAME:
+    container_name: CONTAINER_NAME
+    image: brni05/discos:VERSION
+    restart: RESTART_POLICY
+    env_file:
+      - .env
+    volumes:
+      - ./db.json:/discos/db.json
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "MAX_LOG_SIZE"
+        max-file: "MAX_LOG_COUNT"
