@@ -3,7 +3,7 @@
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
 if [ "$branch" = "main" ]; then
-echo "Permission denied! Please open a Pull Request."
+echo "Permission denied! Please refer to https://github.com/BrNi05/DiscOS/wiki/Contributing-to-DiscOS#coding"
 exit 1
 fi
 
