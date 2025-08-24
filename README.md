@@ -7,7 +7,7 @@ DiscOS is a secure interaction bridge between Discord and Linux servers, letting
 **You can use `/dcos` slash commands to:**
 
 - Execute almost any command on the server as your local user
-- Live-monitoring anything with the watch module
+- Live-monitor (periodically execute) almost any command with the watch module
 - Clear the previous replies for a smooth experience
 - Send any type of file from your machine to the server
 - Send any type of file from the server to your machine (to a Discord channel)
