@@ -1,0 +1,14 @@
+services:
+  discos:
+    container_name: DiscOS
+    image: discos:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./db.json:/discos/db.json
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
