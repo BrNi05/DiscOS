@@ -41,18 +41,19 @@ export async function debug(
   // Construct the debug message
   const reply =
     `Debug command executed by @${username} (UID: ${userId})\n\n` +
-    `Bot User:                  ${client.user!.tag}\n` +
-    `Command Queue Size:        ${commandQueue.length}\n` +
-    `Command Queue Max Size:    ${Config.cmdQueueMaxSize}\n` +
-    `Backend URL:               ${Config.backend}\n` +
-    `Database Path:             ${Config.databasePath}\n` +
-    `File Max Size:             ${Config.fileMaxSize} MB\n` +
-    `Read Bin Override:         ${READ_BIN_OVERRIDE.join(' | ')}\n` +
-    `Standalone Mode:           ${Config.standalone ? 'True' : 'False'}\n` +
-    `Safe Mode:                 ${Config.safemode ? 'True' : 'False'}\n` +
-    `Lockdown Mode:             ${Config.lockdown ? 'True' : 'False'}\n` +
-    `OS uptime:                 ${formatDate(osUptimeSeconds)}\n` +
-    `Process uptime:            ${formatDate(procUptimeSeconds)}`;
+    `Bot User:                 ${client.user!.tag}\n` +
+    `Command Queue Size:       ${commandQueue.length}\n` +
+    `Command Queue Max:        ${Config.cmdQueueMaxSize}\n` +
+    `Backend URL:              ${Config.backend}\n` +
+    `Database Path:            ${Config.databasePath}\n` +
+    `File Max Size:            ${Config.fileMaxSize} MB\n` +
+    `Read Bin Override:        ${READ_BIN_OVERRIDE.join(' | ')}\n` +
+    `QuickView file types:     ${Config.quickView.join(' | ')}\n` +
+    `Standalone Mode:          ${Config.standalone ? 'True' : 'False'}\n` +
+    `Safe Mode:                ${Config.safemode ? 'True' : 'False'}\n` +
+    `Lockdown Mode:            ${Config.lockdown ? 'True' : 'False'}\n` +
+    `OS uptime:                ${formatDate(osUptimeSeconds)}\n` +
+    `Process uptime:           ${formatDate(procUptimeSeconds)}`;
 
   await interaction.editReply({
     content: '```plaintext\n' + reply + '\n```',
