@@ -22,40 +22,41 @@ DiscOS is a secure interaction bridge between Discord and Linux servers, letting
 - Enable or disable DiscOS to be used on specific channels
 - List all channels and users that can use DiscOS
 - Manage admin access and list admins
-- Enable lockdown mode (only admins can use commands)
+- Enable lockdown mode (only admins can use DiscOS commands)
 - Execute almost any command on the server as root
 - Kill DiscOS
 
 **You can use environment variables to:**
 
 - Configure essential security features
-- Limit maximum file size
+- Limit maximum file and reply size
 - Configure some amazing display options
-- Configure bot and some local settings
+- Configure bot and connection settings
 
 **These security features keep you and your server safe:**
 
 - All user input are escaped, so the shell cannot be abused
-- Users can decide if the reply for their command is ephemeral or visible for all server users (who has permission to view the channel)
+- Users can decide if the reply for their command is ephemeral or visible for all server users (who have permission to view the channel)
 - In external backend mode, you can use an IPC server to validate payloads with DiscOS
-- The one and only secret DiscOS uses is the bot token. No others keys or secrets needed.
-- Files are sent over HTTPS through Discord CDN. The URL is not recorded, so only you can see what was sent.
-- Minimal logging. Users deserve privacy.
-- DiscOS is open-source - see what's under the hood.
-- No need for open ports. DiscOS will make a secure outbound connection to Discord servers.
+- The one and only secret DiscOS uses is the bot token. No others keys or secrets needed
+- Minimal logging - users deserve privacy
+- DiscOS is open-source - see what's under the hood
+- No need for open ports - DiscOS will make a secure outbound connection to Discord servers
+- Files are sent over HTTPS through Discord CDN. The URL is not recorded, so only you can see what was sent
+- The Discord API and Discord.js are used by millions of bots and users - DiscOS is built on a solid and reliable foundation
 
 ## Limitations
 
-- Commands that are interactive (require user input) are not supported.
-- Discord API limitations apply.
-- Each command runs a fresh login shell, so no environment, working directory, or state is preserved between executions.
-- Shell initialization files for interactive, non-login shells (e.g. `.bashrc`, `.zshrc`) are not read (but there is a workaround).
+- Commands that are interactive (require user input) are not supported
+- Discord API limitations apply
+- Each command runs a fresh login shell, so no environment, working directory, or state is preserved between executions
+- Shell initialization files for interactive, non-login shells (e.g. `.bashrc`, `.zshrc`) are not read (but there is a workaround)
 
 ## Ways to use
 
 - As a Systemd service
 - As an `npm` package
-- As a Docker container (**non-rootless mode**)
+- In a Docker container (**non-rootless mode**)
 - Compile the code and create an own solution
 
 ## Notice
