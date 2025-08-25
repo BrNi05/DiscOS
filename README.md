@@ -65,6 +65,6 @@ Using DiscOS means you’re cool with the [Terms of Service](https://github.com/
 
 ## Getting started
 
-Please visit [DiscOS Wiki](https://github.com/BrNi05/DiscOS/wiki) for detailed documentation on setup and usage.
+Please visit [DiscOS Wiki](https://github.com/BrNi05/DiscOS/wiki/01.-Home) for detailed documentation on setup and usage.
 
 **Have fun using DiscOS!**
