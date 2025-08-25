@@ -48,12 +48,14 @@ DiscOS is a secure interaction bridge between Discord and Linux servers, letting
 
 - Commands that are interactive (require user input) are not supported.
 - Discord API limitations apply.
+- Each command runs a fresh login shell, so no environment, working directory, or state is preserved between executions.
+- Shell initialization files for interactive, non-login shells (e.g. `.bashrc`, `.zshrc`) are not read (but there is a workaround).
 
 ## Ways to use
 
 - As a Systemd service
 - As an `npm` package
-- As a Docker container
+- As a Docker container (**non-rootless mode**)
 - Compile the code and create an own solution
 
 ## Notice
