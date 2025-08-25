@@ -183,7 +183,7 @@ export function startDiscOS(): void {
           break;
         }
         case COMMON.WRITE: {
-          await write(interaction, username, file, path, payload);
+          await write(interaction, username, file, path, payload, commandQueue);
           break;
         }
         case COMMON.WATCH: {

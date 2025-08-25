@@ -20,6 +20,7 @@ import { languageMap } from '../ext/langMap';
 
 // Utils
 import { post, put } from '../tools/backend';
+import { execCommand } from './command';
 
 // Check file size to align with Discord API limits (as it just silently fails)
 export function checkSize(bytes: number): boolean {
@@ -103,7 +104,8 @@ export async function write(
   username: string,
   file: Attachment,
   path: string,
-  payload: ICommandQueueItem
+  payload: ICommandQueueItem,
+  commandQueue: ICommandQueueItem[]
 ): Promise<void> {
   // Build the payload
   const req: IFileWritePayload = { url: file.url, path: path, payload: payload };
@@ -118,8 +120,8 @@ export async function write(
 
   // Extension autocomplete
   const providedExt: string = PATH.extname(path);
+  const fileExt: string = PATH.extname(file.name);
   if (!providedExt) {
-    const fileExt: string = PATH.extname(file.name);
     if (fileExt) {
       path += fileExt;
       path.trim();
@@ -136,6 +138,14 @@ export async function write(
       content: COMMON.BACKEND_ERR_MSG(username, statusCode, resString),
     });
     return;
+  }
+
+  // Normalize line endings for text-based files
+  if (languageMap[fileExt] || Config.quickView.includes(fileExt)) {
+    const normalizePayload: ICommandQueueItem = { user: payload.user, cmd: `dos2unix ${req.path}` };
+
+    // prefixChoice: 1 - so it is treated as a watch command add added to the commandQueue (and removed later)
+    await execCommand(normalizePayload, interaction, normalizePayload.cmd, username, 1, commandQueue, true);
   }
 
   await interaction.editReply({

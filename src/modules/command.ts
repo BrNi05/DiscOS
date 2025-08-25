@@ -22,7 +22,8 @@ export async function execCommand(
   userCmd: string,
   username: string,
   prefixChoice: number,
-  commandQueue: ICommandQueueItem[] // Used for watch commands
+  commandQueue: ICommandQueueItem[], // Used for watch commands
+  silent: boolean = false // To send a reply or not (internal use only)
 ): Promise<string> {
   let replyPrefix;
   if (prefixChoice === 0) {
@@ -55,9 +56,12 @@ export async function execCommand(
       const replyContent = resString === COMMON.BACKEND_EXEC_ERR ? COMMON.BACKEND_EXEC_ERR_OVERRIDE : resString;
       const replyContentFormatted = `${replyPrefix}` + `${replyContent}`;
 
-      await interaction.editReply({
-        content: '```plaintext\n' + replyContentFormatted + '\n```',
-      });
+      // Do not reply to internal commands
+      if (!silent) {
+        await interaction.editReply({
+          content: '```plaintext\n' + replyContentFormatted + '\n```',
+        });
+      }
 
       return replyContent;
     }
