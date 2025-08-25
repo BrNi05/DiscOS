@@ -19,7 +19,10 @@ fi
 USERNAME="$1"
 CMD="$2"
 
+# Determine the user's shell
+USER_SHELL=$(getent passwd "$USERNAME" | cut -d: -f7)
+
 # Run the command as the specified user
-OUTPUT=$(sudo -iu "$USERNAME" bash -c "$CMD" 2>&1)
+OUTPUT=$(sudo -iu "$USERNAME" "$USER_SHELL" -c "$CMD" 2>&1)
 echo "$OUTPUT"
 exit 0
