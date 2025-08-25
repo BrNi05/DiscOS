@@ -13,7 +13,7 @@
     "docker:down": "docker compose down",
     "docker:prune": "docker system prune -a -f",
     "release:docker": "node scripts/release-docker.js",
-    "release:npm": "npm publish --access public",
+    "release:npm": "rm -rf dist && npm run build && npm publish --access public",
     "release:all": "npm run release:npm && npm run release:docker",
     "release:login": "docker login && npm login",
     "format": "prettier --write \"**/*.{ts,json,md}\" --log-level silent",
@@ -63,6 +63,9 @@
   "files": [
     "dist",
     "LICENSE",
-    "README.md"
+    "README.md",
+    ".github/TERMS_OF_SERVICE.md",
+    ".github/PRIVACY_POLICY.md",
+    "setup/install.sh"
   ]
 }
