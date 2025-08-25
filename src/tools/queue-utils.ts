@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction, CacheType } from 'discord.js';
 import * as COMMON from '../common';
-import type { ICommandQueueItem } from '../shared/types/dcbot';
+import type { ICommandQueueItem } from '../shared/interfaces';
 
 export function tryRemoveInQueue(queue: ICommandQueueItem[], req: ICommandQueueItem): void {
   const index = queue.findIndex((item) => item.user === req.user && item.cmd === req.cmd);

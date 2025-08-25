@@ -4,12 +4,12 @@ import type { AxiosResponse } from 'axios';
 // Config file
 import { Config } from '../config';
 
-// Types
-import type { ICommandQueueItem, IFileWritePayload } from '../shared/types/dcbot';
+// Interfaces
+import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces';
 
 // Consts
 import * as COMMON from '../common';
-import { ROOT_UID } from '../shared/consts/dcbot';
+import { ROOT_UID } from '../shared/consts';
 const WRITE_OP_SUCCESS = '';
 
 // Exec-related

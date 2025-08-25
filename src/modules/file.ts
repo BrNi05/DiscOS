@@ -13,7 +13,7 @@ const UNKNOWN_LANG: string = '?';
 import { Config } from '../config';
 
 // Repo scoped types
-import type { ICommandQueueItem, IFileWritePayload } from '../shared/types/dcbot';
+import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces';
 
 // Language map
 import { languageMap } from '../ext/langMap';

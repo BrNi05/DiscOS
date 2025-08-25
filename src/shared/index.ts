@@ -1,2 +1,2 @@
-export * from './consts/dcbot';
-export * from './types/dcbot';
+export * from './interfaces';
+export * from './consts';

@@ -14,7 +14,7 @@ import { Config } from './config';
 import * as COMMON from './common';
 
 // Repo scoped types
-import type { ICommandQueueItem } from './shared/types/dcbot';
+import type { ICommandQueueItem } from './shared/interfaces';
 
 // Modules
 import { registerSlashCommands } from './slash-commands';

@@ -4,8 +4,8 @@ import net from 'net';
 import fs from 'fs';
 
 import * as COMMON from '../common';
-import { SOCKET_PATH } from '../shared/consts/dcbot';
-import type { ICommandQueueItem } from '../shared/types/dcbot';
+import { SOCKET_PATH } from '../shared/consts';
+import type { ICommandQueueItem } from '../shared/interfaces';
 
 // Config file
 import { Config } from '../config';

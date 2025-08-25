@@ -4,7 +4,7 @@ import { execCommand } from './command';
 import * as COMMON from '../common';
 
 // Repo scoped types
-import type { ICommandQueueItem } from '../shared/types/dcbot';
+import type { ICommandQueueItem } from '../shared/interfaces';
 
 export async function watch(
   interaction: ChatInputCommandInteraction<CacheType>,

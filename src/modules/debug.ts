@@ -5,7 +5,7 @@ import os from 'os';
 import { Config } from '../config';
 
 // Repo scoped types
-import type { ICommandQueueItem } from '../shared/types/dcbot';
+import type { ICommandQueueItem } from '../shared/interfaces';
 
 // Dynamic date formatter
 function formatDate(seconds: number): string {

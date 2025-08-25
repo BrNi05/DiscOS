@@ -4,10 +4,10 @@ import type { ChatInputCommandInteraction, CacheType, Guild } from 'discord.js';
 import { execCommand } from './command';
 import { startIPCServer } from '../tools/ipcServer';
 
-// Consts and project-scoped types
+// Consts and interfaces
 import * as COMMON from '../common';
-import type { ICommandQueueItem } from '../shared/types/dcbot';
-import { ROOT_UID } from '../shared/consts/dcbot';
+import type { ICommandQueueItem } from '../shared/interfaces';
+import { ROOT_UID } from '../shared/consts';
 
 // Config file
 import { Config } from '../config';
