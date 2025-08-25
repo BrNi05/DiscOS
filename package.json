@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npx tsc -b",
+    "build": "rm -f tsconfig.tsbuildinfo && npx tsc -b",
     "setup": "node dist/slash-commands.js",
     "start": "node dist/startup.js",
     "dev": "npx tsc -b && node dist/startup.js",
@@ -13,7 +13,7 @@
     "docker:down": "docker compose down",
     "docker:prune": "docker system prune -a -f",
     "release:docker": "node scripts/release-docker.js",
-    "release:npm": "rm -rf dist && npm run build && npm publish --access public",
+    "release:npm": "rm -rf dist && rm -f tsconfig.tsbuildinfo && npm run build && npm publish --access public",
     "release:all": "npm run release:npm && npm run release:docker",
     "release:login": "docker login && npm login",
     "format": "prettier --write \"**/*.{ts,json,md}\" --log-level silent",
