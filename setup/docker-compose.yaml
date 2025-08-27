@@ -1,8 +1,8 @@
 services:
   SERVICE_NAME:
     container_name: CONTAINER_NAME
-    image: brni05/discos:VERSION
-    restart: RESTART_POLICY
+    image: brni05/discos:latest
+    restart: unless-stopped
     env_file:
       - .env
     volumes:
