@@ -48,6 +48,9 @@ export function startIPCServer(commandQueue: ICommandQueueItem[]): net.Server {
   });
 
   server.listen(SOCKET_PATH, () => {
+    // When running in a Docker container: only root has access to the socket
+    // When running as a Systemd service: only the discos user has access to the socket
+    // Be sure to execute the external backend (if needed) with proper permissions (proper user)
     fs.chmodSync(SOCKET_PATH, 0o600);
     console.log(COMMON.LISTENING + SOCKET_PATH);
   });
