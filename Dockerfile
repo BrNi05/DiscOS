@@ -23,7 +23,7 @@ WORKDIR /discos
 
 COPY package*.json ./
 
-RUN npm ci --omit=dev --no-optional
+RUN npm ci --omit=dev --omit=optional
 
 COPY --from=build /discos/dist ./dist
 
