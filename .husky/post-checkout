@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# $3 = 1 if branch checkout, 0 if file checkout
+
+if [ "$3" -eq 1 ]; then
+  branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+  echo "Branch ($branch_name) checked out. Installing dependencies..."
+  npm install
+fi
