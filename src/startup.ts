@@ -12,9 +12,8 @@ import { Config } from './config';
 
 // Consts and project-scoped types
 import * as COMMON from './common';
-
-// Repo scoped types
 import type { ICommandQueueItem } from './shared/interfaces';
+import type { CommandQueues } from './types/queues';
 
 // Modules
 import { registerSlashCommands } from './slash-commands';
@@ -38,12 +37,18 @@ export function startDiscOS(): void {
   }
 
   // Command queue
-  const commandQueue: ICommandQueueItem[] = [];
+  const queues: CommandQueues = {
+    // Validation queue is "faster" - items are removed on validation
+    validationQueue: [],
+
+    // Duplicate queue is "slower" - items are removed after processing
+    duplicateQueue: [],
+  };
 
   // IPC server init (if not in standalone mode)
   // In unsafe mode, the IPC server is still active, but always returns validated status
   // The backend is not required to use the IPC server at all, yet it is recommended for security reasons
-  Config.ipcServer = Config.standalone ? null : startIPCServer(commandQueue);
+  Config.ipcServer = Config.standalone ? null : startIPCServer(queues);
 
   // Set DiscOS intents
   const client = new Client({
@@ -75,7 +80,7 @@ export function startDiscOS(): void {
     }
 
     // Rate-limiting
-    if (commandQueue.length >= Number(Config.cmdQueueMaxSize)) {
+    if (queues.duplicateQueue.length >= Number(Config.cmdQueueMaxSize)) {
       await interaction.reply({ content: COMMON.DISCOS_OVERLOADED, flags: 64 });
       return;
     }
@@ -103,7 +108,7 @@ export function startDiscOS(): void {
         });
         return;
       }
-      await handleAdmin(interaction, subcommand, username, commandQueue);
+      await handleAdmin(interaction, subcommand, username, queues);
       return;
     }
 
@@ -156,7 +161,7 @@ export function startDiscOS(): void {
     }
 
     // Avoid duplicates
-    if (await queueUtils.handleDuplicate(interaction, username, commandQueue, { user: userId, cmd: queuedCmd })) {
+    if (await queueUtils.handleDuplicate(interaction, username, queues.duplicateQueue, { user: userId, cmd: queuedCmd })) {
       return;
     }
 
@@ -165,13 +170,13 @@ export function startDiscOS(): void {
 
     // Register the command as validated
     const payload: ICommandQueueItem = { user: userId, cmd: queuedCmd };
-    commandQueue.push(payload);
+    queueUtils.addToAll(queues, payload);
 
     // Handle the commands
     try {
       switch (subcommand) {
         case COMMON.EXEC: {
-          await execCommand(payload, interaction, queuedCmd, username, 0, commandQueue);
+          await execCommand(payload, interaction, queuedCmd, username, 0, queues);
           break;
         }
         case COMMON.CLEAR: {
@@ -183,22 +188,23 @@ export function startDiscOS(): void {
           break;
         }
         case COMMON.WRITE: {
-          await write(interaction, username, file, path, payload, commandQueue);
+          await write(interaction, username, file, path, payload, queues);
           break;
         }
         case COMMON.WATCH: {
-          await watch(interaction, username, userId, path, interval, repeat, commandQueue);
+          await watch(interaction, username, userId, path, interval, repeat, queues);
           break;
         }
         case COMMON.DEBUG: {
-          await debug(interaction, username, userId, commandQueue, client);
+          await debug(interaction, username, userId, queues, client);
           break;
         }
       }
     } catch {
       await interaction.editReply({ content: COMMON.DISCOS_GENERIC_ERR2 + username + '.' });
     } finally {
-      queueUtils.tryRemoveInQueue(commandQueue, payload); // removes payload if backend does not use IPCServer (which removes the payload from queue automatically)
+      // Make sure processed commands are removed from both queues
+      queueUtils.removeFromAll(queues, payload);
     }
   });
 

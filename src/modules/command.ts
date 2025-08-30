@@ -10,8 +10,9 @@ import { Config } from '../config';
 // Consts and project-scoped types
 import * as COMMON from '../common';
 
-// Repo scoped types
+// Interfaces
 import type { ICommandQueueItem } from '../shared/interfaces';
+import type { CommandQueues } from '../types/queues';
 
 // Load binary overrides
 const READ_BIN_OVERRIDE: string[] = Config.readBinOverride.map((bin) => `${bin} `);
@@ -22,7 +23,7 @@ export async function execCommand(
   userCmd: string,
   username: string,
   prefixChoice: number,
-  commandQueue: ICommandQueueItem[], // Used for watch commands
+  queues: CommandQueues, // Used for watch commands
   silent: boolean = false // To send a reply or not (internal use only)
 ): Promise<string> {
   let replyPrefix;
@@ -30,7 +31,9 @@ export async function execCommand(
     replyPrefix = COMMON.CMD_EXEC_AS_MSG(userCmd, username); // default
   } else if (prefixChoice === 1) {
     replyPrefix = COMMON.CMD_EXEC_AS_MSG2(username); // watch
-    commandQueue.push(payload); // watch command is formatted, add it temporarily, so backend does not fails validation
+
+    // Watch command is formatted, add it temporarily, so backend does not fails validation
+    queueUtils.addToAll(queues, payload);
   }
 
   try {
@@ -71,6 +74,7 @@ export async function execCommand(
     });
     return COMMON.UNKNOWN_ERR;
   } finally {
-    queueUtils.tryRemoveInQueue(commandQueue, payload); // remove the temp watch command (on normal use, the payload is already removed by IPCServer on backend validation)
+    // Remove the temp watch command (on normal use, the payload is already removed by IPCServer on backend validation)
+    queueUtils.removeFromAll(queues, payload);
   }
 }

@@ -6,11 +6,12 @@ import fs from 'fs';
 import * as COMMON from '../common';
 import { SOCKET_PATH } from '../shared/consts';
 import type { ICommandQueueItem } from '../shared/interfaces';
+import type { CommandQueues } from '../types/queues';
 
 // Config file
 import { Config } from '../config';
 
-export function startIPCServer(commandQueue: ICommandQueueItem[]): net.Server {
+export function startIPCServer(cmdQueues: CommandQueues): net.Server {
   // Ensure the socket does not already exist
   try {
     fs.unlinkSync(SOCKET_PATH);
@@ -37,8 +38,9 @@ export function startIPCServer(commandQueue: ICommandQueueItem[]): net.Server {
       }
 
       // The moment a validation request is received, invalidate the commmand so even well timed spoofing attempts will fail
-      if (queueUtils.isInQueue(commandQueue, req)) {
-        queueUtils.tryRemoveInQueue(commandQueue, req);
+      if (queueUtils.isInQueue(cmdQueues.validationQueue, req)) {
+        queueUtils.tryRemoveInQueue(cmdQueues.validationQueue, req);
+        //queueUtils.tryRemoveInQueue(cmdQueues.duplicateQueue, req); - would break duplicate detection, will be done after processing
         socket.write(JSON.stringify({ valid: true }));
       } else {
         socket.write(JSON.stringify({ valid: false }));

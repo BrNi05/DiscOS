@@ -5,7 +5,7 @@ import os from 'os';
 import { Config } from '../config';
 
 // Repo scoped types
-import type { ICommandQueueItem } from '../shared/interfaces';
+import type { CommandQueues } from '../types/queues';
 
 // Dynamic date formatter
 function formatDate(seconds: number): string {
@@ -28,7 +28,7 @@ export async function debug(
   interaction: ChatInputCommandInteraction<CacheType>,
   username: string,
   userId: string,
-  commandQueue: ICommandQueueItem[],
+  queues: CommandQueues,
   client: Client<boolean>
 ): Promise<void> {
   // Construct the binary list
@@ -42,7 +42,8 @@ export async function debug(
   const reply =
     `Debug command executed by @${username} (UID: ${userId})\n\n` +
     `Bot User:                 ${client.user!.tag}\n` +
-    `Command Queue Size:       ${commandQueue.length}\n` +
+    `Command Queue Size (D):   ${queues.duplicateQueue.length}\n` +
+    `Command Queue Size (V):   ${queues.validationQueue.length}\n` +
     `Command Queue Max:        ${Config.cmdQueueMaxSize}\n` +
     `Backend URL:              ${Config.backend}\n` +
     `Database Path:            ${Config.databasePath}\n` +
@@ -52,7 +53,7 @@ export async function debug(
     `Standalone Mode:          ${Config.standalone ? 'True' : 'False'}\n` +
     `Safe Mode:                ${Config.safemode ? 'True' : 'False'}\n` +
     `Lockdown Mode:            ${Config.lockdown ? 'True' : 'False'}\n` +
-    `OS uptime:                ${formatDate(osUptimeSeconds)}\n` +
+    `Server uptime:            ${formatDate(osUptimeSeconds)}\n` +
     `Process uptime:           ${formatDate(procUptimeSeconds)}`;
 
   await interaction.editReply({

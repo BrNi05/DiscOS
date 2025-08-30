@@ -4,9 +4,13 @@ import type { ChatInputCommandInteraction, CacheType, Guild } from 'discord.js';
 import { execCommand } from './command';
 import { startIPCServer } from '../tools/ipcServer';
 
+// Helpers
+import * as queueUtils from '../tools/queue-utils';
+
 // Consts and interfaces
 import * as COMMON from '../common';
 import type { ICommandQueueItem } from '../shared/interfaces';
+import type { CommandQueues } from '../types/queues';
 import { ROOT_UID } from '../shared/consts';
 
 // Config file
@@ -60,7 +64,7 @@ export async function handleAdmin(
   interaction: ChatInputCommandInteraction<CacheType>,
   subcommand: string,
   username: string,
-  commandQueue: ICommandQueueItem[]
+  queues: CommandQueues
 ): Promise<void> {
   // Defer reply, just to be sure (always hidden)
   await interaction.deferReply({ flags: 64 });
@@ -137,7 +141,7 @@ export async function handleAdmin(
 
     // Start/stop IPC server
     if (Config.standalone && !standalone) {
-      Config.ipcServer = startIPCServer(commandQueue); // switch to backend mode
+      Config.ipcServer = startIPCServer(queues); // switch to backend mode
     } else if (!Config.standalone && standalone) {
       Config.ipcServer!.close(); // switch to standalone mode
       Config.ipcServer = null;
@@ -288,7 +292,10 @@ export async function handleAdmin(
   async function rootCommand(interaction: ChatInputCommandInteraction<CacheType>) {
     const command = interaction.options.getString(COMMON.CMD, true);
     const payload: ICommandQueueItem = { user: ROOT_UID, cmd: command };
-    commandQueue.push(payload); // as backend will validate it
-    await execCommand(payload, interaction, command, username, 0, commandQueue);
+
+    // Backend will validate it
+    queueUtils.addToAll(queues, payload);
+    await execCommand(payload, interaction, command, username, 0, queues);
+    // execCommand removes it from all queues
   }
 }

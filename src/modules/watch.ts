@@ -5,6 +5,7 @@ import * as COMMON from '../common';
 
 // Repo scoped types
 import type { ICommandQueueItem } from '../shared/interfaces';
+import type { CommandQueues } from '../types/queues';
 
 export async function watch(
   interaction: ChatInputCommandInteraction<CacheType>,
@@ -13,7 +14,7 @@ export async function watch(
   target: string,
   interval: number,
   repeat: number,
-  commandQueue: ICommandQueueItem[] // Passed to execCommand() to insert formatted command to validation queue
+  queues: CommandQueues // Passed to execCommand() to insert formatted command to validation queue
 ): Promise<void> {
   let execOutput: string; // capture what is send to Discord
   let lastGoodReply: string = ''; // capture the last not errored reply to Discord
@@ -29,7 +30,7 @@ export async function watch(
     }
 
     // Execute the command
-    execOutput = await execCommand(payload, interaction, cmd, username, 1, commandQueue);
+    execOutput = await execCommand(payload, interaction, cmd, username, 1, queues);
 
     // Check the previous reply (so execOutput)
     const prevReplyContent = execOutput;

@@ -14,6 +14,7 @@ import { Config } from '../config';
 
 // Repo scoped types
 import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces';
+import type { CommandQueues } from '../types/queues';
 
 // Language map
 import { languageMap } from '../ext/langMap';
@@ -105,7 +106,7 @@ export async function write(
   file: Attachment,
   path: string,
   payload: ICommandQueueItem,
-  commandQueue: ICommandQueueItem[]
+  queues: CommandQueues
 ): Promise<void> {
   // Build the payload
   const req: IFileWritePayload = { url: file.url, path: path, payload: payload };
@@ -145,7 +146,7 @@ export async function write(
     const normalizePayload: ICommandQueueItem = { user: payload.user, cmd: `dos2unix ${req.path}` };
 
     // prefixChoice: 1 - so it is treated as a watch command add added to the commandQueue (and removed later)
-    await execCommand(normalizePayload, interaction, normalizePayload.cmd, username, 1, commandQueue, true);
+    await execCommand(normalizePayload, interaction, normalizePayload.cmd, username, 1, queues, true);
   }
 
   await interaction.editReply({

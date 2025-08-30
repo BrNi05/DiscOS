@@ -1,6 +1,17 @@
 import type { ChatInputCommandInteraction, CacheType } from 'discord.js';
 import * as COMMON from '../common';
 import type { ICommandQueueItem } from '../shared/interfaces';
+import type { CommandQueues } from '../types/queues';
+
+export function addToAll(queues: CommandQueues, req: ICommandQueueItem): void {
+  queues.validationQueue.push(req);
+  queues.duplicateQueue.push(req);
+}
+
+export function removeFromAll(queues: CommandQueues, req: ICommandQueueItem): void {
+  tryRemoveInQueue(queues.validationQueue, req);
+  tryRemoveInQueue(queues.duplicateQueue, req);
+}
 
 export function tryRemoveInQueue(queue: ICommandQueueItem[], req: ICommandQueueItem): void {
   const index = queue.findIndex((item) => item.user === req.user && item.cmd === req.cmd);
