@@ -79,6 +79,7 @@ need tail
 need cat
 need base64
 need dos2unix
+need realpath
 
 echo -e "All dependencies installed."
 
@@ -273,14 +274,24 @@ setup_compose() {
 setup_cmdex() {
    echo -e "\nSetting up command executor..."
 
+   echo -e "\nYou can specify one user that is allowed to use command executor. This is the user as which your external backend (if used) or parent process (if npm install) will run."
+   read -rp "Enter the local username (default: root): " CMD_USER
+   CMD_USER=${CMD_USER:-root}
+   echo
+
    cp "$TEMP_DIR/src/.sh/cmd-executor.sh" "/usr/local/bin/cmdex.sh"
-   chown discos:discos "/usr/local/bin/cmdex.sh" || (chown root:root "/usr/local/bin/cmdex.sh" && echo "cmdex will be owned by root.")
+   chown discos:"$CMD_USER" "/usr/local/bin/cmdex.sh" || chown discos:discos "/usr/local/bin/cmdex.sh" || chown root:root "/usr/local/bin/cmdex.sh"
    chmod 770 "/usr/local/bin/cmdex.sh"
    ln -s "/usr/local/bin/cmdex.sh" "/usr/local/bin/cmdex" >/dev/null 2>&1 || echo "Symlink for cmdex already exists."
 
    # Sudoers change
    echo "discos ALL=(ALL) NOPASSWD: /usr/local/bin/cmdex.sh, /usr/local/bin/cmdex" | tee /etc/sudoers.d/cmdex >/dev/null
    chmod 440 /etc/sudoers.d/cmdex
+
+   if [[ "$CMD_USER" != "root" && $(id -u "$CMD_USER" >/dev/null 2>&1; echo $?) -eq 0 ]]; then
+      echo "$CMD_USER ALL=(ALL) NOPASSWD: /usr/local/bin/cmdex.sh, /usr/local/bin/cmdex" | tee /etc/sudoers.d/cmdex-user-"$CMD_USER" >/dev/null
+      chmod 440 /etc/sudoers.d/cmdex-user-"$CMD_USER"
+   fi
 
    echo -e "Command executor setup completed."
 }

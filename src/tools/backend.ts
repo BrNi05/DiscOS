@@ -112,7 +112,7 @@ async function fileWrite(url: string, path: string, payload: ICommandQueueItem):
   ({ stdout } = await execAsync(`sudo /usr/local/bin/cmdex ${serverUser} ${getHomeCmd}`));
   const userHomeDir: string = stdout.trim();
 
-  const permCmd = shellEscape([`cd ${userHomeDir} && chown ${serverUser}:${serverUser} ${escapedPath} && chmod 660 ${escapedPath}`]);
+  const permCmd = shellEscape([`cd ${userHomeDir} && chown ${serverUser}:${serverUser} ${escapedPath} && chmod 644 ${escapedPath}`]);
   ({ stdout } = await execAsync(`sudo /usr/local/bin/cmdex root ${permCmd}`));
   if (stdout.trim() !== '') {
     return COMMON.SET_PERM_ERR;

@@ -7,7 +7,7 @@ import { post } from '../tools/backend';
 // Config file
 import { Config } from '../config';
 
-// Consts and project-scoped types
+// Consts
 import * as COMMON from '../common';
 
 // Interfaces
@@ -15,6 +15,7 @@ import type { ICommandQueueItem } from '../shared/interfaces';
 import type { CommandQueues } from '../types/queues';
 
 // Load binary overrides
+// Include a trailing space to avoid some accidental matches
 const READ_BIN_OVERRIDE: string[] = Config.readBinOverride.map((bin) => `${bin} `);
 
 export async function execCommand(
@@ -26,13 +27,17 @@ export async function execCommand(
   queues: CommandQueues, // Used for watch commands
   silent: boolean = false // To send a reply or not (internal use only)
 ): Promise<string> {
-  let replyPrefix;
-  if (prefixChoice === 0) {
-    replyPrefix = COMMON.CMD_EXEC_AS_MSG(userCmd, username); // default
-  } else if (prefixChoice === 1) {
-    replyPrefix = COMMON.CMD_EXEC_AS_MSG2(username); // watch
+  let replyPrefix: string = '';
 
-    // Watch command is formatted, add it temporarily, so backend does not fails validation
+  // Default
+  if (prefixChoice === 0) {
+    replyPrefix = COMMON.CMD_EXEC_AS_MSG(userCmd, username);
+  }
+  // Watch
+  else if (prefixChoice === 1) {
+    replyPrefix = COMMON.CMD_EXEC_AS_MSG2(username);
+
+    // Watch command is formatted: add it temporarily, so EB does not fails validation
     queueUtils.addToAll(queues, payload);
   }
 
@@ -57,7 +62,7 @@ export async function execCommand(
 
       const resString: string = (res.data as Buffer).toString('utf-8').trim();
       const replyContent = resString === COMMON.BACKEND_EXEC_ERR ? COMMON.BACKEND_EXEC_ERR_OVERRIDE : resString;
-      const replyContentFormatted = `${replyPrefix}` + `${replyContent}`;
+      const replyContentFormatted = replyPrefix + replyContent;
 
       // Do not reply to internal commands
       if (!silent) {

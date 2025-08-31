@@ -12,7 +12,7 @@ const UNKNOWN_LANG: string = '?';
 // Config file
 import { Config } from '../config';
 
-// Repo scoped types
+// Interfaces
 import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces';
 import type { CommandQueues } from '../types/queues';
 
@@ -22,6 +22,7 @@ import { languageMap } from '../ext/langMap';
 // Utils
 import { post, put } from '../tools/backend';
 import { execCommand } from './command';
+import * as queueUtils from '../tools/queue-utils';
 
 // Check file size to align with Discord API limits (as it just silently fails)
 export function checkSize(bytes: number): boolean {
@@ -108,9 +109,6 @@ export async function write(
   payload: ICommandQueueItem,
   queues: CommandQueues
 ): Promise<void> {
-  // Build the payload
-  const req: IFileWritePayload = { url: file.url, path: path, payload: payload };
-
   // Check file size
   if (!checkSize(file.size)) {
     await interaction.editReply({
@@ -119,18 +117,32 @@ export async function write(
     return;
   }
 
+  // Check if the path ends with a slash (no filename is provided)
+  if (path.endsWith('/')) path += file.name;
+
   // Extension autocomplete
   const providedExt: string = PATH.extname(path);
   const fileExt: string = PATH.extname(file.name);
-  if (!providedExt) {
-    if (fileExt) {
-      path += fileExt;
-      path.trim();
-      req.path = path;
-    }
+  if (!providedExt) if (fileExt) path += fileExt;
+
+  // Handle write duplicates
+  // Since DiscOS write operation is quite flexible, upon command arrival, the exact path is still not known, so a check is required here as well
+  if (
+    await queueUtils.handleDuplicate(
+      interaction,
+      username,
+      queues.duplicateQueue,
+      {
+        user: interaction.user.id,
+        cmd: `dcos write to ${path}`,
+      },
+      true
+    )
+  ) {
+    return;
   }
 
-  const res = await put(req);
+  const res = await put({ url: file.url, path: path, payload: payload } as IFileWritePayload);
   const resString: string = String(res.data);
   const statusCode: number = res.status;
 
@@ -143,7 +155,7 @@ export async function write(
 
   // Normalize line endings for text-based files
   if (languageMap[fileExt] || Config.quickView.includes(fileExt)) {
-    const normalizePayload: ICommandQueueItem = { user: payload.user, cmd: `dos2unix ${req.path}` };
+    const normalizePayload: ICommandQueueItem = { user: payload.user, cmd: `dos2unix ${path}` };
 
     // prefixChoice: 1 - so it is treated as a watch command add added to the commandQueue (and removed later)
     await execCommand(normalizePayload, interaction, normalizePayload.cmd, username, 1, queues, true);
@@ -152,4 +164,24 @@ export async function write(
   await interaction.editReply({
     content: COMMON.WRITE_FILE(path, username),
   });
+}
+
+// Returns the absolute path for a given path
+// Returns the path if it is not yet existant
+export async function absPath(path: string, user: string, queues: CommandQueues): Promise<string> {
+  const payload: ICommandQueueItem = { user: user, cmd: `realpath ${path}` };
+
+  // Temporarily add the cmd to queues, so EB does not fails validation
+  queueUtils.addToAll(queues, payload);
+
+  const res = await post(payload, false);
+  let newPath: string = (res.data as Buffer).toString('utf-8').trim();
+
+  // Compensate the trailing slash as it is removed by realpath
+  if (path.endsWith('/') && !newPath.endsWith('/')) newPath += '/';
+
+  queueUtils.removeFromAll(queues, payload);
+
+  if (newPath.includes('realpath: ')) return path; // error, file is new
+  return newPath;
 }

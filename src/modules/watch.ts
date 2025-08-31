@@ -25,11 +25,11 @@ export async function watch(
     const cmd = COMMON.WATCH_CMD_BUILD(target, interval, i, repeat);
     const payload: ICommandQueueItem = { user: userId, cmd: cmd };
 
-    if (i === 0) {
-      lastGoodReply = cmd; // if watch fails on the first iteration, don't break the clear logic and log the username
-    }
+    // If watch fails on the first iteration, don't break the clear logic and log the username
+    if (i === 0) lastGoodReply = cmd;
 
     // Execute the command
+    // Validation is handled by execCommand()
     execOutput = await execCommand(payload, interaction, cmd, username, 1, queues);
 
     // Check the previous reply (so execOutput)
@@ -40,9 +40,7 @@ export async function watch(
         content: '```plaintext\n' + replyContent + '\n```',
       });
       break; // exec errored, no need to continue the loop
-    } else {
-      lastGoodReply = prevReplyContent;
-    }
+    } else lastGoodReply = prevReplyContent;
 
     // Wait for the specified interval before repeating
     await new Promise((resolve) => setTimeout(resolve, interval));
