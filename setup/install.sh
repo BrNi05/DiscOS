@@ -79,6 +79,7 @@ need tail
 need cat
 need base64
 need dos2unix
+need realpath
 
 echo -e "All dependencies installed."
 
