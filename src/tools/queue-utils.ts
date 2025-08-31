@@ -28,9 +28,12 @@ export async function handleDuplicate(
   interaction: ChatInputCommandInteraction<CacheType>,
   username: string,
   queue: ICommandQueueItem[],
-  translated: ICommandQueueItem
+  translated: ICommandQueueItem,
+  inverseUserIdMatch = false // only detect duplicate commands for other users
 ): Promise<boolean> {
-  const index = queue.findIndex((item) => item.user === translated.user && item.cmd === translated.cmd);
+  const index = inverseUserIdMatch
+    ? queue.findIndex((item) => item.user !== translated.user && item.cmd === translated.cmd)
+    : queue.findIndex((item) => item.user === translated.user && item.cmd === translated.cmd);
   if (index !== -1) {
     await interaction.reply({
       content: COMMON.DUPLICATE_ERR + username + '.',

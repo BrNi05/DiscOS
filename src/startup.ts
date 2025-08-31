@@ -19,7 +19,7 @@ import type { CommandQueues } from './types/queues';
 import { registerSlashCommands } from './slash-commands';
 import { execCommand } from './modules/command';
 import { clearHistory } from './modules/clear';
-import { read, write } from './modules/file';
+import { read, write, absPath } from './modules/file';
 import { watch } from './modules/watch';
 import { debug } from './modules/debug';
 import { handleAdmin } from './modules/admin';
@@ -143,8 +143,8 @@ export function startDiscOS(): void {
       }
       case COMMON.WRITE: {
         file = interaction.options.getAttachment(COMMON.FILE, true);
-        path = interaction.options.getString(COMMON.PATH, false) ?? file.name; // left empty, use the uploaded file's name in CWD
-        queuedCmd = `dcos write to ${path}`; // This does not necessarily prevent multiple users concurrently writing the same file
+        path = await absPath(interaction.options.getString(COMMON.PATH, false) ?? file.name, userId, queues); // left empty, use the uploaded file's name in CWD
+        queuedCmd = `dcos write to ${path}`;
         break;
       }
       case COMMON.WATCH: {
@@ -215,7 +215,7 @@ export function startDiscOS(): void {
   });
 }
 
-// Auto-start DiscOS if it is run directly with Node
+// Auto-start DiscOS if it's executed directly with Node
 if (require.main === module) {
   registerSlashCommands();
   startDiscOS();
