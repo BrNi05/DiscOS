@@ -1,13 +1,13 @@
 {
   "name": "discos",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -f tsconfig.tsbuildinfo && npx tsc -b",
     "setup": "node dist/slash-commands.js",
     "start": "node dist/startup.js",
-    "dev": "npx tsc -b && node dist/startup.js",
+    "dev": "npm run build && node dist/startup.js",
     "docker:build": "docker build -t discos:latest .",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
@@ -18,7 +18,8 @@
     "release:login": "docker login && npm login",
     "format": "prettier --write \"**/*.{ts,json,md}\" --log-level silent",
     "lint": "eslint . --ext .ts --cache",
-    "postinstall": "node -e \"if (process.env.NODE_ENV !== 'production') require('child_process').execSync('git config core.hooksPath .husky')\""
+    "postinstall": "node -e \"if (process.env.NODE_ENV !== 'production') require('child_process').execSync('git config core.hooksPath .husky')\"",
+    "test": "echo \"No tests specified.\" && exit 0"
   },
   "keywords": [
     "discord",
@@ -36,9 +37,23 @@
     "file",
     "transfer"
   ],
-  "author": "https://github.com/BrNi05",
+  "author": "Barni <szocsbarnabas8@gmail.com> (https://github.com/BrNi05)",
   "license": "Apache-2.0",
   "description": "DiscOS is a secure interaction bridge between Discord and Linux servers",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrNi05/DiscOS.git"
+  },
+  "homepage": "https://github.com/BrNi05/DiscOS/wiki/01.-Home",
+  "bugs": {
+    "url": "https://github.com/BrNi05/DiscOS/issues"
+  },
+  "os": [
+    "linux"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "axios": "^1.11.0",
     "discord.js": "^14.22.1",
