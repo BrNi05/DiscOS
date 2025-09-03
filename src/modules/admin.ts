@@ -6,6 +6,7 @@ import { startIPCServer } from '../tools/ipcServer';
 
 // Helpers
 import * as queueUtils from '../tools/queue-utils';
+import { ping } from '../tools/backend';
 
 // Consts and interfaces
 import * as COMMON from '../common';
@@ -139,6 +140,13 @@ export async function handleAdmin(
   async function mode(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
     const standalone = interaction.options.getBoolean(COMMON.STANDALONE, true);
 
+    // Ping function
+    // No need for a standalone -> EB transition, always ping
+    let pingRes = '';
+    if (!standalone) {
+      pingRes = await ping();
+    }
+
     // Start/stop IPC server
     if (Config.standalone && !standalone) {
       Config.ipcServer = startIPCServer(queues); // switch to backend mode
@@ -154,7 +162,7 @@ export async function handleAdmin(
     dbClose(db);
 
     await interaction.editReply({
-      content: COMMON.MODE_REPLY(standalone),
+      content: COMMON.MODE_REPLY(standalone, pingRes),
     });
   }
 
