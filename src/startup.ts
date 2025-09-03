@@ -6,6 +6,7 @@ import { validateDotenv } from './tools/validateDotenv';
 import { validateDb } from './tools/validateDb';
 import { startIPCServer } from './tools/ipcServer';
 import * as queueUtils from './tools/queue-utils';
+import { ping } from './tools/backend';
 
 // Database config file
 import { Config } from './config';
@@ -54,6 +55,11 @@ export function startDiscOS(): void {
   const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
   });
+
+  // Ping external backend (if not in standalone mode)
+  if (!Config.standalone) {
+    void ping();
+  }
 
   // Discord event listener (with filtering)
   client.on(Events.InteractionCreate, async (interaction) => {

@@ -9,7 +9,7 @@ import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces'
 
 // Consts
 import * as COMMON from '../common';
-import { ROOT_UID } from '../shared/consts';
+import { ROOT_UID, PING_RESPONSE } from '../shared/consts';
 const WRITE_OP_SUCCESS = '';
 
 // Exec-related
@@ -154,4 +154,35 @@ export async function put(req: IFileWritePayload): Promise<AxiosResponse<any, an
   }
 
   return res;
+}
+
+// Pings the external backend, return a message based on the result
+export async function ping(): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const res = await axios.get(Config.backend, {
+      responseType: 'text',
+      validateStatus: (status) => status >= 200 && status < 300,
+      signal: controller.signal,
+    });
+
+    // The backend may be down, but the reverse proxy redirected to a default page (HTTP code wouldn't fail)
+    if ((res.data as string).trim() !== PING_RESPONSE) {
+      throw new Error(COMMON.EXTERNAL_NORESPONSE);
+    }
+
+    console.log(COMMON.EXTERNAL_OK);
+    return COMMON.EXTERNAL_OK;
+  } catch (err) {
+    if (err instanceof Error) {
+      console.warn(err.message);
+    } else {
+      console.warn(String(err));
+    }
+    return COMMON.EXTERNAL_NORESPONSE;
+  } finally {
+    clearTimeout(timeout);
+  }
 }

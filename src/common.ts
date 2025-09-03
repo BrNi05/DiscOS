@@ -18,7 +18,7 @@ export const ENV_QUICK_VIEW_MAX_LENGTH = 'DiscOS ERROR: QUICK_VIEW_MAX_LENGTH mu
 export const DB_ERR = 'DiscOS ERROR: Database file is invalid or missing.';
 export const DB_USER_ERR = 'DiscOS ERROR: users must be an object with numeric string keys (Discord UIDs) and string values (local users).';
 export const DB_USERS_EMPTY = 'DiscOS WARN: No users found in database.';
-export const DB_USERS_INVALID = 'User IDs must be numeric strings at least 17 characters long';
+export const DB_USERS_INVALID = 'User IDs must be numeric strings at least 17 characters long.';
 export const DB_ADMIN_ERR = 'DiscOS ERROR: adminUsers must be an array of numeric strings with at least 17 characters.';
 export const DB_NO_ADMIN = 'DiscOS ERROR: There must be at least one admin user in the database.';
 export const DB_ADMIN_INVALID = 'DiscOS ERROR: adminUsers must be a non-empty array of numeric strings with at least 17 characters.';
@@ -164,7 +164,7 @@ export const DISCOS_GENERIC_ERR2 = 'DiscOS encountered an error. User: @';
 export const DISCOS_CONN_FAIL = 'Connection to Discord failed:';
 
 // index.ts: IPC Server
-export const LISTENING = 'DiscOS IPC server is listening on port ';
+export const LISTENING = 'DiscOS IPC server is listening on ';
 
 // Module: command.ts
 export function CMD_EXEC_AS_MSG(userCmd: string, username: string): string {
@@ -199,7 +199,7 @@ export const MSG_CLR_POST = ' messages for ';
 
 // Module: file.ts
 export function FILE_CORRUPT_ERR(username: string): string {
-  return `DiscOS ERROR: The file is corrupted, too large to send, has unkown extension or unreadable (as @${username}). Check the file path, extension, size and permissions.`;
+  return `DiscOS ERROR: The file is corrupted, too large to send, has unknown extension or unreadable (as @${username}). Check the file path, extension, size and permissions.`;
 }
 
 export function FILE_SIZE_ERR(maxSize: number): string {
@@ -241,8 +241,8 @@ export const WATCH_TERM = 'Watch is terminated.';
 
 export const UNKNOWN_USER = 'Non-server member user';
 
-export function MODE_REPLY(standalone: boolean): string {
-  return `DiscOS is now running in ${standalone ? 'standalone' : 'external backend'} mode.`;
+export function MODE_REPLY(standalone: boolean, pingRes: string): string {
+  return `DiscOS is now running in ${standalone ? 'standalone' : 'external backend'} mode.` + '\n' + pingRes;
 }
 
 export function SAFEMODE_REPLY(safemode: boolean): string {
@@ -284,3 +284,8 @@ export const DIR_ERR = 'The provided path is an existing directory.';
 export const PERM_ERR = 'No permission to write to the file (or to enter the directories).';
 export const DOWNLOAD_ERR = 'Failed to download file from Discord CDN.';
 export const SET_PERM_ERR = 'Failed to set file permissions.';
+
+export const PING_FAILED = 'Ping failed: ';
+export const EXTERNAL_OK = 'External backend is online and responded to the health check ping.';
+export const EXTERNAL_NORESPONSE =
+  'WARNING! The external backend did not respond to the health check ping. It may be offline or unreachable.';
