@@ -80,7 +80,6 @@ need cat
 need base64
 need dos2unix
 need realpath
-need coreutils
 need head
 need grep # installed as script deps as well
 
