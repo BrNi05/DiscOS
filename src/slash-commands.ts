@@ -58,6 +58,7 @@ export function registerSlashCommands(): void {
         .addStringOption((option) => option
           .setName(COMMON.PATH)
           .setDescription(COMMON.PATH_DESC_READ)
+          .setAutocomplete(true)
           .setRequired(true))
         .addBooleanOption((option) => option
           .setName(COMMON.HIDE)
@@ -77,6 +78,7 @@ export function registerSlashCommands(): void {
         .addStringOption((option) => option
           .setName(COMMON.PATH)
           .setDescription(COMMON.PATH_DESC_WRITE)
+          .setAutocomplete(true)
           .setRequired(false))
         .addBooleanOption((option) => option
           .setName(COMMON.HIDE)
