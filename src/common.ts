@@ -228,6 +228,8 @@ export function BACKEND_ERR_MSG(username: string, statusCode: number, resString:
   return `BACKEND ERROR as @${username}.\nHTTP status code: ${statusCode}.\nMessage: ${resString}`;
 }
 
+export const NEW_FILE = 'NEW FILE: ';
+
 // Module: watch.ts
 export function WATCH_CMD_BUILD(target: string, interval: number, i: number, repeat: number): string {
   return `echo "Watching <${target}> at ${interval}ms intervals. Tick: ${i + 1} / ${repeat}." && echo && ${target}`;
