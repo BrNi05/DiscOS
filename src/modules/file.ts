@@ -1,4 +1,4 @@
-import type { ChatInputCommandInteraction, CacheType, Attachment } from 'discord.js';
+import type { ChatInputCommandInteraction, AutocompleteInteraction, CacheType, Attachment } from 'discord.js';
 import { AttachmentBuilder } from 'discord.js';
 import PATH from 'path';
 
@@ -23,6 +23,7 @@ import { languageMap } from '../ext/langMap';
 import { post, put } from '../tools/backend';
 import { execCommand } from './command';
 import * as queueUtils from '../tools/queue-utils';
+import shellEscape from 'shell-escape';
 
 // Check file size to align with Discord API limits (as it just silently fails)
 export function checkSize(bytes: number): boolean {
@@ -184,4 +185,72 @@ export async function absPath(path: string, user: string, queues: CommandQueues)
 
   if (newPath.includes('realpath: ')) return path; // error, file is new
   return newPath;
+}
+
+// Path input autocomplete handler
+export async function pathAutocomplete(interaction: AutocompleteInteraction<CacheType>, queues: CommandQueues): Promise<void> {
+  // Do not respond in certain situations
+  if (!interaction.guild || !Config.allowedChannels.includes(interaction.channelId) || !Config.allowedUsers.includes(interaction.user.id)) {
+    return;
+  }
+
+  // The current user input string
+  const focusedValue = interaction.options.getFocused();
+
+  // Determine the CWD as per the path input
+  // If the input has no slashes, the user is in the home dir, so shell spawning needs no special handling
+  let currentDir = '.';
+  let filter = focusedValue;
+  if (focusedValue.includes('/')) {
+    // Find last slash and cut everything behind it (and the slash as well)
+    const lastSlashIndex = focusedValue.lastIndexOf('/');
+    currentDir = focusedValue.substring(0, lastSlashIndex);
+
+    // The matching should be done only for the part after the last slash
+    filter = focusedValue.substring(lastSlashIndex + 1);
+  }
+
+  // Handle file system root
+  if (currentDir === '') currentDir = '/';
+
+  // Find suggestions
+  const payload: ICommandQueueItem = {
+    user: interaction.user.id,
+    cmd: `(cd ${shellEscape([currentDir])} >/dev/null 2>&1 && LC_ALL=C ls -A --group-directories-first${focusedValue ? ` | grep -F -- "${shellEscape([filter])}"` : ''} | head -n 10) || echo ''`,
+  };
+
+  queueUtils.addToAll(queues, payload);
+  const res = await post(payload, false);
+  queueUtils.removeFromAll(queues, payload);
+
+  const items: string[] = (res.data as Buffer)
+    .toString('utf-8')
+    .split('\n')
+    .filter((item) => item.trim());
+
+  // Items array shouldn't be empty (causes Discod API error and app crash)
+  if (items.length === 0) {
+    items.push(focusedValue);
+  }
+
+  // Map the suggestions to the format required by Discord.js
+  // Case: there were no matches - a new path is created
+  if (String(res.data).trim().length === 0) {
+    await interaction.respond(
+      items.map((choice) => ({
+        name: 'NEW FILE: ' + choice,
+        value: choice,
+      }))
+    );
+  }
+  // Case: there are matches - show full paths
+  else {
+    const separator: string = currentDir === '/' ? '' : '/';
+    await interaction.respond(
+      items.map((choice) => ({
+        name: currentDir === '.' ? choice : currentDir + separator + choice,
+        value: currentDir === '.' ? choice : currentDir + separator + choice,
+      }))
+    );
+  }
 }

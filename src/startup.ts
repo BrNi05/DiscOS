@@ -20,7 +20,7 @@ import type { CommandQueues } from './types/queues';
 import { registerSlashCommands } from './slash-commands';
 import { execCommand } from './modules/command';
 import { clearHistory } from './modules/clear';
-import { read, write, absPath } from './modules/file';
+import { read, write, absPath, pathAutocomplete } from './modules/file';
 import { watch } from './modules/watch';
 import { debug } from './modules/debug';
 import { handleAdmin } from './modules/admin';
@@ -63,6 +63,17 @@ export function startDiscOS(): void {
 
   // Discord event listener (with filtering)
   client.on(Events.InteractionCreate, async (interaction) => {
+    // Path autocomplete handler
+    if (interaction.isAutocomplete()) {
+      const subcommand: string = interaction.options.getSubcommand();
+      if (
+        (interaction.commandName === COMMON.DCOS || interaction.commandName === COMMON.ADMOS) &&
+        (subcommand === COMMON.READ || subcommand === COMMON.WRITE)
+      ) {
+        return pathAutocomplete(interaction, queues);
+      }
+    }
+
     // Only respond to chat input and specific commands
     if (!interaction.isChatInputCommand()) return;
     if (interaction.commandName !== COMMON.DCOS && interaction.commandName !== COMMON.ADMOS) return;
