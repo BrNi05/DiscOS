@@ -238,7 +238,7 @@ export async function pathAutocomplete(interaction: AutocompleteInteraction<Cach
   if (String(res.data).trim().length === 0) {
     await interaction.respond(
       items.map((choice) => ({
-        name: 'NEW FILE: ' + choice,
+        name: COMMON.NEW_FILE + choice,
         value: choice,
       }))
     );
