@@ -79,6 +79,16 @@ export const REPEAT_DESC = 'Number of calls to make. Default: 20. Min: 1. Max: 1
 export const DEBUG = 'debug';
 export const DEBUG_DESC = 'Display various debug infos about the DiscOS instance.';
 
+// Subcommand - help
+export const HELP = 'help';
+export const HELP_USER_DESC = 'Display help for DiscOS commands.';
+export const HELP_ADMIN_DESC = 'Display help for AdmOS (admin) commands.';
+export const HELP_USER = '[User commands](https://github.com/BrNi05/DiscOS/wiki/06.-Using-DiscOS-%E2%80%90-user)';
+export const HELP_ADMIN =
+  '[Admin commands](https://github.com/BrNi05/DiscOS/wiki/07.-Using-DiscOS-%E2%80%90-admin)' +
+  '\n' +
+  '[User commands](https://github.com/BrNi05/DiscOS/wiki/06.-Using-DiscOS-%E2%80%90-user)';
+
 // Default values for commands
 export const DEFAULT_HIDDEN = true;
 export const DEFAULT_LOOKBACK = -1; // means unlimited
@@ -237,8 +247,6 @@ export function WATCH_CMD_BUILD(target: string, interval: number, i: number, rep
 export const TOO_MANY_REQ = 'Too many requests. Please try again later...';
 export const WATCH_TERM = 'Watch is terminated.';
 
-// Module: debug.ts - as for now, not moved here
-
 // Module: admin.ts
 
 export const UNKNOWN_USER = 'Non-server member user';
@@ -272,13 +280,50 @@ export function ADMIN_OPERATION(username: string, op: boolean): string {
   return `User @${username} is/was ${extra}allowed to use admin commands.`;
 }
 
-export function ADMIN_OPS(username: string, localUser: string, op: boolean, overr: boolean): string {
+export function ADMIN_OPS(username: string, localUser: string, op: boolean, overr: boolean, userDelete: boolean): string {
   const extra = op ? 'added' : 'removed';
-  const override = overr ? ' Previous local user setting was overwritten.' : '';
-  return `User @${username} (as ${localUser} on server) is/was ${extra} as an admin user.` + override;
+  const override = overr ? '\nPrevious local user setting was overwritten.' : '';
+  const deleteMsg = userDelete ? '\nA local user was removed as well.' : '';
+  return `User @${username} (as ${localUser} on server) is/was ${extra} as a DiscOS user.` + override + deleteMsg;
+}
+
+export function NOT_IN_USERLIST_ERR(user: string): string {
+  return `AdmOS ERROR: @${user} is not a DiscOS user.\nUse the /admos usermgmt slash command, which can (while registering the user) add an admin user.`;
 }
 
 export const ADMIN = 'admin';
+
+export const PROPAGATE = 'propagate';
+export const PROPAGATE_DESC = 'True: create / remove local user based on DiscOS operation. Default: true.';
+export const DEFAULT_PROPAGATE = true;
+
+export function COULDNT_PROPAGATE_ERR(localUser: string): string {
+  return `AdmOS ERROR: Local user "${localUser}" is non-existent and propagation is turned off. Operation aborted.`;
+}
+
+export const ADMIN_AS_WELL = 'admin';
+export const ADMIN_AS_WELL_DESC = 'True: register the select user as admin as well. Default: false.';
+export const DEFAULT_ADMIN_AS_WELL = false;
+
+export const NEW_USER = 'NEW USER: ';
+
+export function USER_GREETING(user: string, localUser: string, guild: string): string {
+  return `Hello @${user},\n\nYou have been registered to use DiscOS commands (as ${localUser}) on Discord server: ${guild}.\nUse /${DCOS} ${HELP} to see available commands.`;
+}
+
+export function USER_GOODBYE(user: string): string {
+  return `Goodbye @${user},\n\nYour DiscOS user has been removed and you can no longer use DiscOS commands.\nIf this was a mistake, please contact an admin.`;
+}
+
+export function ADMIN_GREETING(user: string, localUser: string, guild: string): string {
+  return `Hello @${user},\n\nYou have been registered as a DiscOS admin on Discord server: ${guild}. Now you can use AdmOS commands.\nYou are also registered to use DiscOS commands on the host as: ${localUser}.\nUse /${DCOS} ${HELP} to see available user commands and /${ADMOS} ${HELP} to see available admin commands.`;
+}
+
+export function ADMIN_GOODBYE(user: string): string {
+  return `Goodbye @${user},\n\nYour DiscOS admin user has been removed and you can no longer use AdmOS commands.\nIf this was a mistake, please contact an admin.`;
+}
+
+export const UNAME_PREFIX = 'discos';
 
 // Backend
 export const SPAWN_ERR = 'DiscOS CRITICAL ERROR: cmdex is broken.';

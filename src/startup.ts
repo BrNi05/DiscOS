@@ -23,7 +23,7 @@ import { clearHistory } from './modules/clear';
 import { read, write, absPath, pathAutocomplete } from './modules/file';
 import { watch } from './modules/watch';
 import { debug } from './modules/debug';
-import { handleAdmin } from './modules/admin';
+import { handleAdmin, localUserAutocomplete } from './modules/admin';
 
 // Start DiscOS func
 export function startDiscOS(): void {
@@ -71,6 +71,8 @@ export function startDiscOS(): void {
         (subcommand === COMMON.READ || subcommand === COMMON.WRITE)
       ) {
         return pathAutocomplete(interaction, queues);
+      } else if ((interaction.commandName === COMMON.DCOS || interaction.commandName === COMMON.ADMOS) && subcommand === COMMON.USER_MGMT) {
+        return localUserAutocomplete(interaction, queues);
       }
     }
 
@@ -125,13 +127,13 @@ export function startDiscOS(): void {
         });
         return;
       }
-      await handleAdmin(interaction, subcommand, username, queues);
+      await handleAdmin(interaction, subcommand, username, queues, client);
       return;
     }
 
     // Determine the subcommand and process it
     // All subcommands are translated into pseudo-command, and stored in that form in the queue, thus preventing spoofing
-    let queuedCmd: string = ''; // the format used for queuing and concurrency restrictions
+    let queuedCmd: string = ''; // the format used for queuing and user-scoped concurrency restrictions
     const hideReply: boolean = interaction.options.getBoolean(COMMON.HIDE, false) ?? COMMON.DEFAULT_HIDDEN;
 
     let lookback: number = COMMON.DEFAULT_LOOKBACK; // may not be used
@@ -172,7 +174,11 @@ export function startDiscOS(): void {
         break;
       }
       case COMMON.DEBUG: {
-        queuedCmd = `dcos debug`; // Just dummy register the command
+        queuedCmd = 'dcos debug'; // Just dummy register the command
+        break;
+      }
+      case COMMON.HELP: {
+        queuedCmd = 'dcos help'; // Just dummy register the command
         break;
       }
     }
@@ -214,6 +220,10 @@ export function startDiscOS(): void {
         }
         case COMMON.DEBUG: {
           await debug(interaction, username, userId, queues, client);
+          break;
+        }
+        case COMMON.HELP: {
+          await interaction.editReply({ content: COMMON.HELP_USER });
           break;
         }
       }

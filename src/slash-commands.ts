@@ -122,12 +122,20 @@ export function registerSlashCommands(): void {
           .setName(COMMON.HIDE)
           .setDescription(COMMON.HIDE_REPLY)
           .setRequired(false))
+    )
+
+    // /dcos help
+    .addSubcommand((sub) =>
+      sub
+        .setName(COMMON.HELP)
+        .setDescription(COMMON.HELP_USER_DESC)
     );
 
   // Create the /admos subdommands
   const adminCommand = new SlashCommandBuilder()
     .setName(COMMON.ADMOS)
     .setDescription(COMMON.ADMOS_DESC)
+
     // /admos kill
     // Shuts down the DiscOS instance
     .addSubcommand((sub) =>
@@ -190,14 +198,23 @@ export function registerSlashCommands(): void {
           .setName(COMMON.USER)
           .setDescription(COMMON.USER_SEL)
           .setRequired(true))
-        .addStringOption((option) => option
-          .setName(COMMON.LOCAL_USER)
-          .setDescription(COMMON.LOCAL_USER_DESC)
-          .setRequired(true))
         .addBooleanOption((option) => option
           .setName(COMMON.OPERATION)
           .setDescription(COMMON.ADDRM)
           .setRequired(true))
+        .addStringOption((option) => option
+          .setName(COMMON.LOCAL_USER)
+          .setDescription(COMMON.LOCAL_USER_DESC)
+          .setAutocomplete(true)
+          .setRequired(false))
+        .addBooleanOption((option) => option
+          .setName(COMMON.PROPAGATE)
+          .setDescription(COMMON.PROPAGATE_DESC)
+          .setRequired(false))
+        .addBooleanOption((option) => option
+          .setName(COMMON.ADMIN_AS_WELL)
+          .setDescription(COMMON.ADMIN_AS_WELL_DESC)
+          .setRequired(false))
     )
 
     // /admos lsu
@@ -270,6 +287,13 @@ export function registerSlashCommands(): void {
           .setName(COMMON.CMD)
           .setDescription(COMMON.CMD_DESC)
           .setRequired(true))
+    )
+
+    // /admos help
+    .addSubcommand((sub) =>
+      sub
+        .setName(COMMON.HELP)
+        .setDescription(COMMON.HELP_ADMIN_DESC)
     );
 
   const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN!);
