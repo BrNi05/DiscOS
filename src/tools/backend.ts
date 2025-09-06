@@ -7,10 +7,18 @@ import { Config } from '../config';
 // Interfaces
 import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces';
 
+// Types
+import type { DB } from '../shared/types';
+import { DB_UPDATE } from '../shared/consts';
+
 // Consts
 import * as COMMON from '../common';
 import { ROOT_UID, PING_RESPONSE } from '../shared/consts';
 const WRITE_OP_SUCCESS = '';
+
+// Helpers
+import type { CommandQueues } from 'src/types/queues';
+import * as queueUtils from '../tools/queue-utils';
 
 // Exec-related
 import shellEscape from 'shell-escape';
@@ -185,4 +193,19 @@ export async function ping(): Promise<string> {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+// Updates the external backend's database by sending the local database content
+export async function updateExternalBackendDatabase(database: DB, queues: CommandQueues): Promise<void> {
+  const validationPayload: ICommandQueueItem = { user: ROOT_UID, cmd: DB_UPDATE };
+  queueUtils.addToAll(queues, validationPayload);
+
+  await axios.put(Config.backend + '/' + DB_UPDATE, database, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    validateStatus: (status) => status <= 500,
+  });
+
+  queueUtils.tryRemoveInQueue(queues.validationQueue, validationPayload);
 }

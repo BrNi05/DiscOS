@@ -32,11 +32,6 @@ export function startDiscOS(): void {
     process.exit(1);
   }
 
-  // Validate database and load additional environment variables
-  if (!validateDb()) {
-    process.exit(1);
-  }
-
   // Command queue
   const queues: CommandQueues = {
     // Validation queue is "faster" - items are removed on validation
@@ -45,6 +40,11 @@ export function startDiscOS(): void {
     // Duplicate queue is "slower" - items are removed after processing
     duplicateQueue: [],
   };
+
+  // Validate database and load additional environment variables
+  if (!validateDb(queues)) {
+    process.exit(1);
+  }
 
   // IPC server init (if not in standalone mode)
   // In unsafe mode, the IPC server is still active, but always returns validated status
@@ -124,6 +124,7 @@ export function startDiscOS(): void {
       if (!isAdminUser) {
         await interaction.reply({
           content: COMMON.DISCOS_NON_ADMIN,
+          flags: 64,
         });
         return;
       }
