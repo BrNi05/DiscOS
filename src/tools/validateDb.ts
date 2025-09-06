@@ -1,14 +1,18 @@
 import fs from 'fs';
 
 import * as COMMON from '../common';
-import type { DB } from '../types/db';
+import type { DB } from '../shared/types';
 
 import { Config } from '../config';
+
+import { updateExternalBackendDatabase } from './backend';
+
+import type { CommandQueues } from 'src/types/queues';
 
 // UDI and CID validation
 const isValidId = (id: string) => /^\d{17,}$/.test(id);
 
-export function validateDb(): boolean {
+export function validateDb(queues: CommandQueues): boolean {
   // Read DB
   let db: DB;
   try {
@@ -89,6 +93,9 @@ export function validateDb(): boolean {
   Config.standalone = db.standalone;
   Config.safemode = db.safemode;
   Config.lockdown = db.lockdown;
+
+  // Update the external backend DB
+  if (!Config.standalone) void updateExternalBackendDatabase(db, queues);
 
   return true;
 }

@@ -320,7 +320,7 @@ export function ADMIN_GREETING(user: string, localUser: string, guild: string): 
 }
 
 export function ADMIN_GOODBYE(user: string): string {
-  return `Goodbye @${user},\n\nYour DiscOS admin user has been removed and you can no longer use AdmOS commands.\nIf this was a mistake, please contact an admin.`;
+  return `Hello @${user},\n\nYour DiscOS admin rights have been revoked and you can no longer use AdmOS commands.\nIf this was a mistake, please contact an admin.`;
 }
 
 export const UNAME_PREFIX = 'discos';

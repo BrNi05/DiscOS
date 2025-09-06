@@ -21,7 +21,7 @@ import { clearHistory } from './clear';
 
 // DB-related
 import fs from 'fs';
-import type { DB } from '../types/db';
+import type { DB } from '../shared/types';
 import { validateDb } from '../tools/validateDb';
 
 // User listing helper
@@ -56,9 +56,9 @@ async function dbPrep(interaction: ChatInputCommandInteraction<CacheType>): Prom
   }
 }
 
-function dbClose(db: DB) {
+function dbClose(db: DB, queues: CommandQueues) {
   fs.writeFileSync(Config.databasePath, JSON.stringify(db, null, 2), 'utf-8');
-  validateDb(); // load new db to Config
+  validateDb(queues); // load new db to Config
 }
 
 // Local user auto-complete helper
@@ -287,7 +287,7 @@ export async function handleAdmin(
     const db = await dbPrep(interaction);
     if (!db) return;
     db.standalone = standalone; // write to DB, then load it to Config
-    dbClose(db);
+    dbClose(db, queues);
 
     await interaction.editReply({
       content: COMMON.MODE_REPLY(standalone, pingRes),
@@ -302,7 +302,7 @@ export async function handleAdmin(
     const db = await dbPrep(interaction);
     if (!db) return;
     db.safemode = enabled; // write to DB, then load it to Config
-    dbClose(db);
+    dbClose(db, queues);
 
     await interaction.editReply({
       content: COMMON.SAFEMODE_REPLY(enabled),
@@ -346,7 +346,7 @@ export async function handleAdmin(
 
       if (!adminAsWell) await sendDM(client, userId, COMMON.USER_GREETING(targetUser, localUser, guildName));
       else {
-        dbClose(db); // update the DB before calling (to have the user registered)
+        dbClose(db, queues); // update the DB before calling (to have the user registered)
         await new Promise((r) => setTimeout(r, 2000)); // wait 2 sec
         await adminMgmt(interaction, client);
       }
@@ -378,7 +378,7 @@ export async function handleAdmin(
       }
     }
 
-    if (!adminAsWell) dbClose(db); // do not overwrite the changes made by adminMgmt
+    if (!adminAsWell) dbClose(db, queues); // do not overwrite the changes made by adminMgmt
   }
 
   // /dcadm adminmgmt <user> <add?/remove?>
@@ -424,7 +424,7 @@ export async function handleAdmin(
       }
     }
 
-    dbClose(db);
+    dbClose(db, queues);
   }
 
   // /dcadm chmgmt <channel> <add?/remove?>
@@ -456,7 +456,7 @@ export async function handleAdmin(
       }
     }
 
-    dbClose(db);
+    dbClose(db, queues);
   }
 
   // /dcadm lockdown <true?>
@@ -467,7 +467,7 @@ export async function handleAdmin(
     const db = await dbPrep(interaction);
     if (!db) return;
     db.lockdown = enabled; // write to DB, then load it to Config
-    dbClose(db);
+    dbClose(db, queues);
 
     await interaction.editReply({
       content: COMMON.LOCKDOWN_REPLY(enabled),
