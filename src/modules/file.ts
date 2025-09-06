@@ -174,14 +174,13 @@ export async function absPath(path: string, user: string, queues: CommandQueues)
 
   // Temporarily add the cmd to queues, so EB does not fails validation
   queueUtils.addToAll(queues, payload);
-
   const res = await post(payload, false);
+  queueUtils.removeFromAll(queues, payload);
+
   let newPath: string = (res.data as Buffer).toString('utf-8').trim();
 
   // Compensate the trailing slash as it is removed by realpath
   if (path.endsWith('/') && !newPath.endsWith('/')) newPath += '/';
-
-  queueUtils.removeFromAll(queues, payload);
 
   if (newPath.includes('realpath: ')) return path; // error, file is new
   return newPath;
