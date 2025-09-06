@@ -16,6 +16,7 @@
     "release:npm": "rm -rf dist && rm -f tsconfig.tsbuildinfo && npm run build && npm publish --access public",
     "release:all": "npm run release:npm && npm run release:docker",
     "release:login": "docker login && npm login",
+    "pack": "rm -rf dist && rm -f tsconfig.tsbuildinfo && npm run build && npm pack",
     "format": "prettier --write \"**/*.{ts,json,md}\" --log-level silent",
     "lint": "eslint . --ext .ts --cache",
     "postinstall": "node -e \"if (process.env.NODE_ENV !== 'production') require('child_process').execSync('git config core.hooksPath .husky')\"",
