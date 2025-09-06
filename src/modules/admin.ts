@@ -1,4 +1,4 @@
-import type { ChatInputCommandInteraction, CacheType, Guild } from 'discord.js';
+import type { ChatInputCommandInteraction, AutocompleteInteraction, CacheType, Guild, Client } from 'discord.js';
 
 // Modules
 import { execCommand } from './command';
@@ -6,7 +6,8 @@ import { startIPCServer } from '../tools/ipcServer';
 
 // Helpers
 import * as queueUtils from '../tools/queue-utils';
-import { ping } from '../tools/backend';
+import { ping, post } from '../tools/backend';
+import shellEscape from 'shell-escape';
 
 // Consts and interfaces
 import * as COMMON from '../common';
@@ -23,7 +24,7 @@ import fs from 'fs';
 import type { DB } from '../types/db';
 import { validateDb } from '../tools/validateDb';
 
-// Helper - listUsers
+// User listing helper
 async function listUsers(interaction: ChatInputCommandInteraction<CacheType>, guild: Guild, group: string[]): Promise<void> {
   // Cache all the guild users
   await guild.members.fetch();
@@ -60,12 +61,135 @@ function dbClose(db: DB) {
   validateDb(); // load new db to Config
 }
 
+// Local user auto-complete helper
+export async function localUserAutocomplete(interaction: AutocompleteInteraction<CacheType>, queues: CommandQueues): Promise<void> {
+  // Do not respond in certain situations
+  if (!interaction.guild || !Config.allowedChannels.includes(interaction.channelId) || !Config.allowedUsers.includes(interaction.user.id)) {
+    return;
+  }
+
+  // The current user input string
+  const focusedValue = interaction.options.getFocused();
+
+  // Find suggestions
+  const payload: ICommandQueueItem = {
+    user: ROOT_UID,
+    cmd: `grep -vE ':(/usr/sbin/nologin|/bin/false|/sbin/nologin)$' /etc/passwd | cut -d: -f1 | grep -F -- "${shellEscape([focusedValue])}" | head -n 5`,
+  };
+
+  queueUtils.addToAll(queues, payload);
+  const res = await post(payload, false);
+  queueUtils.removeFromAll(queues, payload);
+
+  const items: string[] = (res.data as Buffer)
+    .toString('utf-8')
+    .split('\n')
+    .filter((item) => item.trim());
+
+  // Items array shouldn't be empty (causes Discod API error and app crash)
+  if (items.length === 0) {
+    items.push(focusedValue);
+  }
+
+  // Map the suggestions to the format required by Discord.js
+  const prefix = String(res.data).trim().length === 0 ? COMMON.NEW_USER : '';
+
+  await interaction.respond(
+    items.map((choice) => ({
+      name: prefix + choice,
+      value: choice,
+    }))
+  );
+}
+
+// DM helper
+async function sendDM(client: Client, userId: string, content: string): Promise<void> {
+  const user = await client.users.fetch(userId);
+
+  void user.send(content); // silently fail on DM errors (eg. a user only allows DMs from friends)
+}
+
+// Checks if the localUser exists on the host, creates it if requested, or deletes it if requested
+const LOCAL_USER_FAILED = 'false';
+const LOCAL_USER_SUCCESS = 'true';
+
+async function localUserHandler(localUser: string, propagate: boolean, operation: boolean, queue: CommandQueues): Promise<string> {
+  if (operation) {
+    // Check if the local user exists
+    const payload: ICommandQueueItem = {
+      user: ROOT_UID,
+      cmd: `id -u ${shellEscape([localUser])}`,
+    };
+
+    queueUtils.addToAll(queue, payload);
+    const res = await post(payload, false);
+    queueUtils.removeFromAll(queue, payload);
+
+    let userExists = true;
+    if ((res.data as Buffer).toString('utf-8').trim().startsWith('id: ')) {
+      userExists = false;
+    }
+
+    if (propagate) {
+      if (!userExists) {
+        const payload: ICommandQueueItem = {
+          user: ROOT_UID,
+          cmd: `useradd -m ${shellEscape([localUser])}`,
+        };
+
+        queueUtils.addToAll(queue, payload);
+        await post(payload, false);
+        queueUtils.removeFromAll(queue, payload);
+
+        return LOCAL_USER_SUCCESS;
+      }
+    } else {
+      if (!userExists) {
+        return LOCAL_USER_FAILED;
+      }
+    }
+  } else {
+    // It is checked on call, if only this user is assigned this local user
+    if (propagate) {
+      const payload: ICommandQueueItem = {
+        user: ROOT_UID,
+        cmd: `id -u ${shellEscape([localUser])} >/dev/null 2>&1 && userdel -r ${shellEscape([localUser])} >/dev/null 2>&1`,
+      };
+
+      queueUtils.addToAll(queue, payload);
+      void post(payload, false);
+      queueUtils.removeFromAll(queue, payload);
+    }
+
+    return LOCAL_USER_SUCCESS;
+  }
+
+  return LOCAL_USER_SUCCESS;
+}
+
+// Username trunctuate tool
+function truncUname(input: string): string {
+  const MAX_LEN: number = 32;
+
+  input = input.toLowerCase().trim();
+
+  // Sanitize the username
+  input = input.replace(/[^a-z0-9_.]/g, '');
+
+  if (input.length > MAX_LEN) {
+    return input.substring(0, MAX_LEN);
+  }
+
+  return input;
+}
+
 // Orchestration
 export async function handleAdmin(
   interaction: ChatInputCommandInteraction<CacheType>,
   subcommand: string,
   username: string,
-  queues: CommandQueues
+  queues: CommandQueues,
+  client: Client
 ): Promise<void> {
   // Defer reply, just to be sure (always hidden)
   await interaction.deferReply({ flags: 64 });
@@ -98,7 +222,7 @@ export async function handleAdmin(
       break;
     }
     case COMMON.USER_MGMT: {
-      await userMgmt(interaction);
+      await userMgmt(interaction, client);
       break;
     }
     case COMMON.LSU: {
@@ -106,7 +230,7 @@ export async function handleAdmin(
       break;
     }
     case COMMON.ADMIN_MGMT: {
-      await adminMgmt(interaction);
+      await adminMgmt(interaction, client);
       break;
     }
     case COMMON.LSA: {
@@ -123,6 +247,10 @@ export async function handleAdmin(
     }
     case COMMON.ROOT: {
       await rootCommand(interaction);
+      break;
+    }
+    case COMMON.HELP: {
+      await interaction.editReply({ content: COMMON.HELP_ADMIN });
       break;
     }
   }
@@ -182,23 +310,46 @@ export async function handleAdmin(
   }
 
   // /dcadm usermgmt <user> <localProfile> <add?/remove?>
-  async function userMgmt(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
+  async function userMgmt(interaction: ChatInputCommandInteraction<CacheType>, client: Client): Promise<void> {
     const userObj = interaction.options.getUser(COMMON.USER, true);
-    const member = userObj ? interaction.guild?.members.resolve(userObj) : null;
-    const targetUser: string = member ? (member.nickname ?? member.user.username) : COMMON.CLEAR_ALL_USER;
+    const guildName = interaction.guild!.name;
+    const targetUser: string = userObj.username;
     const userId = userObj.id;
-    const localProfile = interaction.options.getString(COMMON.LOCAL_USER, true);
     const operation = interaction.options.getBoolean(COMMON.OPERATION, true);
+    let localUser = interaction.options.getString(COMMON.LOCAL_USER, false)?.trim() ?? userObj.username; // optional field: use the Discord name if not provided
+    const propagate = interaction.options.getBoolean(COMMON.PROPAGATE, false) ?? COMMON.DEFAULT_PROPAGATE;
+    const adminAsWell = interaction.options.getBoolean(COMMON.ADMIN_AS_WELL, false) ?? COMMON.DEFAULT_ADMIN_AS_WELL;
 
-    const db = await dbPrep(interaction);
+    let deleteUser = false; // only used on user removal
+
+    const db: false | DB = await dbPrep(interaction);
     if (!db) return;
 
     if (operation) {
+      // Transform localUser to a valid Linux username
+      if (!interaction.options.getString(COMMON.LOCAL_USER, false)?.trim()) localUser = truncUname(COMMON.UNAME_PREFIX + '_' + targetUser);
+
+      // Check localUser
+      const res: string = await localUserHandler(localUser, propagate, operation, queues);
+      if (res === LOCAL_USER_FAILED) {
+        await interaction.editReply({
+          content: COMMON.COULDNT_PROPAGATE_ERR(localUser),
+        });
+        return;
+      }
+
       const existed: boolean = db.users[userId] !== undefined;
-      db.users[userId] = localProfile; // adds or overwrites the user profile
+      db.users[userId] = localUser; // adds or overwrites the user profile
       await interaction.editReply({
-        content: COMMON.ADMIN_OPS(targetUser, localProfile, true, existed),
+        content: COMMON.ADMIN_OPS(targetUser, localUser, true, existed, false),
       });
+
+      if (!adminAsWell) await sendDM(client, userId, COMMON.USER_GREETING(targetUser, localUser, guildName));
+      else {
+        dbClose(db); // update the DB before calling (to have the user registered)
+        await new Promise((r) => setTimeout(r, 2000)); // wait 2 sec
+        await adminMgmt(interaction, client);
+      }
     } else {
       if (Object.keys(db.users).length === 1) {
         await interaction.editReply({
@@ -206,29 +357,54 @@ export async function handleAdmin(
         });
         return;
       } else {
-        if (userId in db.users) delete db.users[userId];
+        if (userId in db.users) {
+          // Check if the user is also an admin
+          if (db.adminUsers.includes(userId)) {
+            db.adminUsers = db.adminUsers.filter((u) => u !== userId); // delete user as admin
+            await sendDM(client, userId, COMMON.ADMIN_GOODBYE(targetUser));
+          }
+
+          // Delete the local user if no other DiscOS user uses it
+          deleteUser = Object.values(db.users).filter((lu) => lu === db.users[userId]).length === 1 && propagate;
+          if (deleteUser) await localUserHandler(db.users[userId], true, operation, queues); // delete the local user
+
+          delete db.users[userId]; // delete the DiscOS user
+
+          await sendDM(client, userId, COMMON.USER_GOODBYE(targetUser));
+        }
         await interaction.editReply({
-          content: COMMON.ADMIN_OPS(targetUser, localProfile, false, false),
+          content: COMMON.ADMIN_OPS(targetUser, localUser, false, false, deleteUser),
         });
       }
     }
 
-    dbClose(db);
+    if (!adminAsWell) dbClose(db); // do not overwrite the changes made by adminMgmt
   }
 
   // /dcadm adminmgmt <user> <add?/remove?>
-  async function adminMgmt(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
+  async function adminMgmt(interaction: ChatInputCommandInteraction<CacheType>, client: Client): Promise<void> {
     const userObj = interaction.options.getUser(COMMON.USER, true);
-    const member = userObj ? interaction.guild?.members.resolve(userObj) : null;
-    const targetUser: string = member ? (member.nickname ?? member.user.username) : COMMON.CLEAR_ALL_USER;
+    const guildName = interaction.guild!.name;
+    const targetUser: string = userObj.username;
     const userId = userObj.id;
     const operation = interaction.options.getBoolean(COMMON.OPERATION, true);
+
+    // Check if the user is a DiscOS user
+    if (!Config.allowedUsers.includes(userId)) {
+      await interaction.editReply({
+        content: COMMON.NOT_IN_USERLIST_ERR(targetUser),
+      });
+      return;
+    }
 
     const db = await dbPrep(interaction);
     if (!db) return;
 
     if (operation) {
-      if (!db.adminUsers.includes(userId)) db.adminUsers.push(userId);
+      if (!db.adminUsers.includes(userId)) {
+        db.adminUsers.push(userId);
+        await sendDM(client, userId, COMMON.ADMIN_GREETING(targetUser, db.users[userId], guildName));
+      }
       await interaction.editReply({
         content: COMMON.ADMIN_OPERATION(targetUser, true),
       });
@@ -243,6 +419,8 @@ export async function handleAdmin(
         await interaction.editReply({
           content: COMMON.ADMIN_OPERATION(targetUser, false),
         });
+
+        await sendDM(client, userId, COMMON.ADMIN_GOODBYE(targetUser));
       }
     }
 
