@@ -2,12 +2,8 @@
   "users": {
     "DC_UID": "LOCAL_USER"
   },
-  "adminUsers": [
-    "DC_UID"
-  ],
-  "allowedChannels": [
-    "CHANNEL_ID"
-  ],
+  "adminUsers": ["DC_UID"],
+  "allowedChannels": ["CHANNEL_ID"],
   "standalone": true,
   "safemode": true,
   "lockdown": false
