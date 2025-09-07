@@ -1,3 +1,6 @@
+// Platform validation
+export const PLATFORM_ERR = 'DiscOS CRITICAL ERROR: Only Linux is supported. Startup aborted.';
+
 // dotenv validation
 export function ENV_MISSING_VAR(missingVars: string[]): string {
   return `DiscOS ERROR: Missing environment variables: ${missingVars.join(', ')}`;
