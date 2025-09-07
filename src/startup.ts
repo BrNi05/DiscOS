@@ -27,6 +27,12 @@ import { handleAdmin, localUserAutocomplete } from './modules/admin';
 
 // Start DiscOS func
 export function startDiscOS(): void {
+  // Platform validation
+  if (process.platform !== 'linux') {
+    console.error(COMMON.PLATFORM_ERR);
+    process.exit(1);
+  }
+
   // Load and validate environment variables
   if (!validateDotenv()) {
     process.exit(1);

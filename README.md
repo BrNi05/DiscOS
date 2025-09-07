@@ -38,11 +38,11 @@ DiscOS is a secure interaction bridge between Discord and Linux servers, letting
 - All user input are escaped, so the shell cannot be abused
 - Users can decide if the reply for their command is ephemeral or visible for all server users (who have permission to view the channel)
 - In external backend mode, you can use an IPC server to validate payloads with DiscOS
-- The one and only secret DiscOS uses is the bot token. No others keys or secrets needed
+- The one and only secret DiscOS uses is the bot token - no others keys or secrets needed
 - Minimal logging - users deserve privacy
 - DiscOS is open-source - see what's under the hood
 - No need for open ports - DiscOS will make a secure outbound connection to Discord servers
-- Files are sent over HTTPS through Discord CDN. The URL is not recorded, so only you can see what was sent
+- Files are sent over HTTPS through Discord CDN, the URL is not recorded, so only you can see what was sent
 - The Discord API and Discord.js are used by millions of bots and users - DiscOS is built on a solid and reliable foundation
 
 ## Limitations

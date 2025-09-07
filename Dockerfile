@@ -2,18 +2,16 @@
 
 FROM node:lts-alpine AS build
 
-# Set NODE_ENV to production (to avoid running husky postinstall scripts)
-ENV NODE_ENV=production
-
 WORKDIR /discos
 
 COPY package*.json ./
 
-RUN npm ci
+# Avoid running husky postinstall scripts
+RUN npm ci --ignore-scripts --silent
 
 COPY . .
 
-RUN rm -f tsconfig.tsbuildinfo && npm run build
+RUN npm run build
 
 ##### Stage 2: Production #####
 
@@ -23,7 +21,9 @@ WORKDIR /discos
 
 COPY package*.json ./
 
-RUN npm ci --omit=dev --omit=optional
+ENV NODE_ENV=production
+
+RUN npm ci --omit=dev --omit=optional --silent
 
 COPY --from=build /discos/dist ./dist
 
