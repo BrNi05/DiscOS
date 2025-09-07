@@ -2,12 +2,12 @@
 
 ## Supported Versions
 
-Older versions of DiscOS will generally become unsupported when a new release is published. Support is typically provided for the latest minor version. In the event of a breaking change, the previous minor version will also receive temporary support limited to security updates.
+Older versions of DiscOS will generally become unsupported when a new release is published. Support is typically provided for the latest minor version. In the event of a breaking change, the previous minor version might also receive temporary support limited to security updates.
 
 | Version |     Supported      | End of Life |
 | :-----: | :----------------: | :---------: |
 |  1.0.0  |        :x:         |  in 1.1.0   |
-|  1.1.0  | :white_check_mark: |      -      |
+|  1.1.0  | :white_check_mark: |  in 1.2.0   |
 
 ## Reporting a Vulnerability
 
