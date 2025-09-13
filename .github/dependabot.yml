@@ -28,6 +28,7 @@ updates:
           - "^ts-node"
           - "^@types/"
           - "^husky"
+          - "^jiti"
 
   - package-ecosystem: "github-actions"
     directory: "/"
