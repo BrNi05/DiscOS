@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "node16",
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": false,

@@ -1,28 +1,28 @@
 import type { ChatInputCommandInteraction, AutocompleteInteraction, CacheType, Guild, Client } from 'discord.js';
 
 // Modules
-import { execCommand } from './command';
-import { startIPCServer } from '../tools/ipcServer';
+import { execCommand } from './command.js';
+import { startIPCServer } from '../tools/ipcServer.js';
 
 // Helpers
-import * as queueUtils from '../tools/queue-utils';
-import { ping, post } from '../tools/backend';
+import * as queueUtils from '../tools/queue-utils.js';
+import { ping, post } from '../tools/backend.js';
 import shellEscape from 'shell-escape';
 
 // Consts and interfaces
-import * as COMMON from '../common';
-import type { ICommandQueueItem } from '../shared/interfaces';
-import type { CommandQueues } from '../types/queues';
-import { ROOT_UID } from '../shared/consts';
+import * as COMMON from '../common.js';
+import type { ICommandQueueItem } from '../shared/interfaces.js';
+import type { CommandQueues } from '../types/queues.js';
+import { ROOT_UID } from '../shared/consts.js';
 
 // Config file
-import { Config } from '../config';
-import { clearHistory } from './clear';
+import { Config } from '../config.js';
+import { clearHistory } from './clear.js';
 
 // DB-related
 import fs from 'fs';
-import type { DB } from '../shared/types';
-import { validateDb } from '../tools/validateDb';
+import type { DB } from '../shared/types.js';
+import { validateDb } from '../tools/validateDb.js';
 
 // User listing helper
 async function listUsers(interaction: ChatInputCommandInteraction<CacheType>, guild: Guild, group: string[]): Promise<void> {

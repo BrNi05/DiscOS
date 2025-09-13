@@ -1,15 +1,15 @@
-import * as queueUtils from '../tools/queue-utils';
+import * as queueUtils from '../tools/queue-utils.js';
 
 import net from 'net';
 import fs from 'fs';
 
-import * as COMMON from '../common';
-import { SOCKET_PATH } from '../shared/consts';
-import type { ICommandQueueItem } from '../shared/interfaces';
-import type { CommandQueues } from '../types/queues';
+import * as COMMON from '../common.js';
+import { SOCKET_PATH } from '../shared/consts.js';
+import type { ICommandQueueItem } from '../shared/interfaces.js';
+import type { CommandQueues } from '../types/queues.js';
 
 // Config file
-import { Config } from '../config';
+import { Config } from '../config.js';
 
 export function startIPCServer(cmdQueues: CommandQueues): net.Server {
   // Ensure the socket does not already exist

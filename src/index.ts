@@ -1,5 +1,5 @@
 // Export shared types and constants for external backend type safety
-export * from './shared';
+export * from './shared/index.js';
 
 // Export the startup function
-export { startDiscOS } from './startup';
+export { startDiscOS } from './startup.js';

@@ -1,10 +1,13 @@
 import { REST, Routes, SlashCommandBuilder } from 'discord.js';
 
 // Helpers
-import { validateDotenv } from './tools/validateDotenv';
+import { validateDotenv } from './tools/validateDotenv.js';
 
 // Consts and project-scoped types
-import * as COMMON from './common';
+import * as COMMON from './common.js';
+
+// Path helper
+import { fileURLToPath } from 'url';
 
 export function registerSlashCommands(): void {
   // Load and validate environment variables
@@ -316,6 +319,6 @@ export function registerSlashCommands(): void {
 }
 
 // Run slash command building if it is run directly with Node
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   registerSlashCommands();
 }

@@ -6,23 +6,23 @@ import PATH from 'path';
 import { fileTypeFromBuffer } from 'file-type';
 
 // Consts and project-scoped types
-import * as COMMON from '../common';
+import * as COMMON from '../common.js';
 const UNKNOWN_LANG: string = '?';
 
 // Config file
-import { Config } from '../config';
+import { Config } from '../config.js';
 
 // Interfaces
-import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces';
-import type { CommandQueues } from '../types/queues';
+import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces.js';
+import type { CommandQueues } from '../types/queues.js';
 
 // Language map
-import { languageMap } from '../ext/langMap';
+import { languageMap } from '../ext/langMap.js';
 
 // Utils
-import { post, put } from '../tools/backend';
-import { execCommand } from './command';
-import * as queueUtils from '../tools/queue-utils';
+import { post, put } from '../tools/backend.js';
+import { execCommand } from './command.js';
+import * as queueUtils from '../tools/queue-utils.js';
 import shellEscape from 'shell-escape';
 
 // Check file size to align with Discord API limits (as it just silently fails)

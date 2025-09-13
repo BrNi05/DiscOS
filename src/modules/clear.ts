@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction, CacheType, Message } from 'discord.js';
 
-import * as COMMON from '../common';
+import * as COMMON from '../common.js';
 
 // Sleep helper
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

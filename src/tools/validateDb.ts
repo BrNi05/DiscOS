@@ -1,13 +1,13 @@
 import fs from 'fs';
 
-import * as COMMON from '../common';
-import type { DB } from '../shared/types';
+import * as COMMON from '../common.js';
+import type { DB } from '../shared/types.js';
 
-import { Config } from '../config';
+import { Config } from '../config.js';
 
-import { updateExternalBackendDatabase } from './backend';
+import { updateExternalBackendDatabase } from './backend.js';
 
-import type { CommandQueues } from 'src/types/queues';
+import type { CommandQueues } from 'src/types/queues.js';
 
 // UDI and CID validation
 const isValidId = (id: string) => /^\d{17,}$/.test(id);

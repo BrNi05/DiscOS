@@ -2,10 +2,10 @@ import type { ChatInputCommandInteraction, CacheType, Client } from 'discord.js'
 import os from 'os';
 
 // Config file
-import { Config } from '../config';
+import { Config } from '../config.js';
 
 // Repo scoped types
-import type { CommandQueues } from '../types/queues';
+import type { CommandQueues } from '../types/queues.js';
 
 // Dynamic date formatter
 function formatDate(seconds: number): string {
