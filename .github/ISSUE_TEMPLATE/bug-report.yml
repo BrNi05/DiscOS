@@ -34,7 +34,7 @@ body:
       options:
         - Standalone
         - External backend
-        - Not mode-specific
+        - Bug is not mode-specific
     validations:
       required: true
 
@@ -47,7 +47,7 @@ body:
       required: true
 
   - type: textarea
-    id: steps
+    id: reproduce_steps
     attributes:
       label: Steps to reproduce
       description: A detailed list of steps to reproduce the bug
