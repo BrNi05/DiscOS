@@ -7,13 +7,14 @@ Older versions of DiscOS will generally become unsupported when a new release is
 | Version |     Supported      | End of Life |
 | :-----: | :----------------: | :---------: |
 |  1.0.0  |        :x:         |  in 1.1.0   |
-|  1.1.0  | :white_check_mark: |  in 1.2.0   |
+|  1.1.0  |        :x:         |  in 1.2.0   |
+|  1.2.0  | :white_check_mark: |  in 1.3.0   |
 
 ## Reporting a Vulnerability
 
 If you discover a vulnerability, please **do not** report it as a regular bug. Instead, use the dedicated ticket type and [open an issue](https://github.com/BrNi05/DiscOS/issues).
 
-For severe vulnerabilities, or ones that could be easily exploited, please **DO NOT** open a ticket. Instead, contact me directly via [email](mailto:szocsbarnabas8@gmail.com).
+For severe vulnerabilities, or ones that could be easily exploited, please **DO NOT** open a ticket. Instead, contact me directly via [email](mailto:szocsbarnabas8@gmail.com) or draft a [security advisory](https://github.com/BrNi05/DiscOS/security/advisories).
 
 ## What not to report
 
