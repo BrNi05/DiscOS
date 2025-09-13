@@ -7,7 +7,7 @@ body:
     id: version
     attributes:
       label: DiscOS version
-      description: Select which version of DiscOS are you using.
+      description: Select which version of DiscOS you are using
       placeholder: "1.0.0"
     validations:
       required: true
@@ -16,11 +16,12 @@ body:
     id: usage
     attributes:
       label: Usage
-      description: Select how are you using DiscOS.
+      description: Select the affected release type
       options:
         - Systemd service
         - Docker container
         - NPM package
+        - Bug is not release-specific
         - Other (specify it below)
     validations:
       required: true
@@ -29,10 +30,11 @@ body:
     id: mode
     attributes:
       label: Mode
-      description: Select which backend do you use.
+      description: Select the affected backend mode
       options:
         - Standalone
         - External backend
+        - Not mode-specific
     validations:
       required: true
 
@@ -51,7 +53,7 @@ body:
     id: description
     attributes:
       label: Describe the security issue
-      description: An in-depth of the vulnerability, it's impact, and how to reproduce it.
+      description: An in-depth description of the vulnerability, it's impact, and how to reproduce it.
     validations:
       required: true
 

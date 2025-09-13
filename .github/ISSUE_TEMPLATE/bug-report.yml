@@ -7,20 +7,21 @@ body:
     id: version
     attributes:
       label: DiscOS version
-      description: Select which version of DiscOS are you using.
-      placeholder: "1.0.0"
+      description: Select which version of DiscOS you are using
+      placeholder: "1.2.0"
     validations:
       required: true
 
   - type: dropdown
-    id: usage
+    id: release
     attributes:
-      label: Usage
-      description: Select how are you using DiscOS.
+      label: Release
+      description: Select the affected release type
       options:
         - Systemd service
         - Docker container
         - NPM package
+        - Bug is not release-specific
         - Other (specify it below)
     validations:
       required: true
@@ -29,10 +30,11 @@ body:
     id: mode
     attributes:
       label: Mode
-      description: Select which backend do you use.
+      description: Select the affected backend mode
       options:
         - Standalone
         - External backend
+        - Not mode-specific
     validations:
       required: true
 
@@ -40,7 +42,7 @@ body:
     id: description
     attributes:
       label: Describe the bug
-      description: A short but clear description of the issue.
+      description: A short but clear description of the issue
     validations:
       required: true
 
@@ -48,7 +50,7 @@ body:
     id: steps
     attributes:
       label: Steps to reproduce
-      description: A detailed list of steps to reproduce the bug.
+      description: A detailed list of steps to reproduce the bug
     validations:
       required: true
 
@@ -56,6 +58,6 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: OS, Node.js version, related network settings, etc.
+      description: OS, Node.js version, related network settings, etc
     validations:
       required: true
