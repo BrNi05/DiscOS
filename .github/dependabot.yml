@@ -27,3 +27,13 @@ updates:
           - "^typescript"
           - "^ts-node"
           - "^@types/"
+          - "^husky"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "ACTIONS UPDATE: "
+    labels:
+      - actions
