@@ -1,11 +1,11 @@
 import type { ChatInputCommandInteraction, CacheType } from 'discord.js';
-import { execCommand } from './command';
+import { execCommand } from './command.js';
 
-import * as COMMON from '../common';
+import * as COMMON from '../common.js';
 
 // Repo scoped types
-import type { ICommandQueueItem } from '../shared/interfaces';
-import type { CommandQueues } from '../types/queues';
+import type { ICommandQueueItem } from '../shared/interfaces.js';
+import type { CommandQueues } from '../types/queues.js';
 
 export async function watch(
   interaction: ChatInputCommandInteraction<CacheType>,

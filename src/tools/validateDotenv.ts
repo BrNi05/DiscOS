@@ -1,7 +1,7 @@
-import * as COMMON from '../common';
+import * as COMMON from '../common.js';
 import dotenv from 'dotenv';
 
-import { Config } from '../config';
+import { Config } from '../config.js';
 
 dotenv.config({ quiet: true });
 

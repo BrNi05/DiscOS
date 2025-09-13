@@ -3,11 +3,11 @@
   "version": "1.1.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "build": "rm -f tsconfig.tsbuildinfo && npx tsc -b",
     "setup": "node dist/slash-commands.js",
     "start": "node dist/startup.js",
-    "dev": "npm run build && node dist/startup.js",
     "docker:build": "docker build -t discos:latest .",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
@@ -20,6 +20,7 @@
     "format": "prettier --write \"**/*.{ts,json,md}\" --log-level silent",
     "lint": "eslint . --ext .ts --cache",
     "postinstall": "node -e \"if (process.env.NODE_ENV !== 'production') require('child_process').execSync('git config core.hooksPath .husky')\"",
+    "unsafe": "git config --unset core.hooksPath",
     "test": "echo \"No tests specified.\" && exit 0"
   },
   "keywords": [

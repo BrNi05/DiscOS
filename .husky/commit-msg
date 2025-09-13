@@ -2,7 +2,7 @@
 
 msg=$(cat "$1")
 
-if ! echo "$msg" | grep -qE '^(FEATURE|BUGFIX|SECURITY|DOCS|DEV|REFACTOR|VERSIONING|MISC|SETUP): .{1,}$'; then
+if ! echo "$msg" | grep -qE '^(FEATURE|BUGFIX|SECURITY|DOCS|DEV|REFACTOR|VERSIONING|MISC|SETUP|GITHUB): .{1,}$'; then
   echo "Invalid commit message format! Please refer to https://github.com/BrNi05/DiscOS/wiki/Contributing-to-DiscOS#coding"
   exit 1
 fi

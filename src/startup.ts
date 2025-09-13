@@ -2,28 +2,31 @@ import type { Attachment } from 'discord.js';
 import { Client, GatewayIntentBits, Events } from 'discord.js';
 
 // Helpers
-import { validateDotenv } from './tools/validateDotenv';
-import { validateDb } from './tools/validateDb';
-import { startIPCServer } from './tools/ipcServer';
-import * as queueUtils from './tools/queue-utils';
-import { ping } from './tools/backend';
+import { validateDotenv } from './tools/validateDotenv.js';
+import { validateDb } from './tools/validateDb.js';
+import { startIPCServer } from './tools/ipcServer.js';
+import * as queueUtils from './tools/queue-utils.js';
+import { ping } from './tools/backend.js';
 
 // Database config file
-import { Config } from './config';
+import { Config } from './config.js';
 
 // Consts and project-scoped types
-import * as COMMON from './common';
-import type { ICommandQueueItem } from './shared/interfaces';
-import type { CommandQueues } from './types/queues';
+import * as COMMON from './common.js';
+import type { ICommandQueueItem } from './shared/interfaces.js';
+import type { CommandQueues } from './types/queues.js';
 
 // Modules
-import { registerSlashCommands } from './slash-commands';
-import { execCommand } from './modules/command';
-import { clearHistory } from './modules/clear';
-import { read, write, absPath, pathAutocomplete } from './modules/file';
-import { watch } from './modules/watch';
-import { debug } from './modules/debug';
-import { handleAdmin, localUserAutocomplete } from './modules/admin';
+import { registerSlashCommands } from './slash-commands.js';
+import { execCommand } from './modules/command.js';
+import { clearHistory } from './modules/clear.js';
+import { read, write, absPath, pathAutocomplete } from './modules/file.js';
+import { watch } from './modules/watch.js';
+import { debug } from './modules/debug.js';
+import { handleAdmin, localUserAutocomplete } from './modules/admin.js';
+
+// Path helper
+import { fileURLToPath } from 'url';
 
 // Start DiscOS func
 export function startDiscOS(): void {
@@ -250,7 +253,7 @@ export function startDiscOS(): void {
 }
 
 // Auto-start DiscOS if it's executed directly with Node
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   registerSlashCommands();
   startDiscOS();
 }

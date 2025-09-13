@@ -1,3 +1,3 @@
-export * from './interfaces';
-export * from './consts';
-export * from './types';
+export * from './interfaces.js';
+export * from './consts.js';
+export * from './types.js';

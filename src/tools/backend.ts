@@ -2,23 +2,23 @@ import axios, { type InternalAxiosRequestConfig } from 'axios';
 import type { AxiosResponse } from 'axios';
 
 // Config file
-import { Config } from '../config';
+import { Config } from '../config.js';
 
 // Interfaces
-import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces';
+import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces.js';
 
 // Types
-import type { DB } from '../shared/types';
-import { DB_UPDATE } from '../shared/consts';
+import type { DB } from '../shared/types.js';
+import { DB_UPDATE } from '../shared/consts.js';
 
 // Consts
-import * as COMMON from '../common';
-import { ROOT_UID, PING_RESPONSE } from '../shared/consts';
+import * as COMMON from '../common.js';
+import { ROOT_UID, PING_RESPONSE } from '../shared/consts.js';
 const WRITE_OP_SUCCESS = '';
 
 // Helpers
-import type { CommandQueues } from 'src/types/queues';
-import * as queueUtils from '../tools/queue-utils';
+import type { CommandQueues } from 'src/types/queues.js';
+import * as queueUtils from '../tools/queue-utils.js';
 
 // Exec-related
 import shellEscape from 'shell-escape';

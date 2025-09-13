@@ -1,18 +1,18 @@
 import type { ChatInputCommandInteraction, CacheType } from 'discord.js';
 
 // Helpers
-import * as queueUtils from '../tools/queue-utils';
-import { post } from '../tools/backend';
+import * as queueUtils from '../tools/queue-utils.js';
+import { post } from '../tools/backend.js';
 
 // Config file
-import { Config } from '../config';
+import { Config } from '../config.js';
 
 // Consts
-import * as COMMON from '../common';
+import * as COMMON from '../common.js';
 
 // Interfaces
-import type { ICommandQueueItem } from '../shared/interfaces';
-import type { CommandQueues } from '../types/queues';
+import type { ICommandQueueItem } from '../shared/interfaces.js';
+import type { CommandQueues } from '../types/queues.js';
 
 // Load binary overrides
 // Include a trailing space to avoid some accidental matches
