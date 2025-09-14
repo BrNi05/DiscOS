@@ -19,5 +19,5 @@ execSync(`docker build ${tags.map(t => '-t ' + t).join(' ')} .`, { stdio: 'inher
 
 tags.slice(1).forEach(tag => {
   console.log('Pushing Docker tag: ', tag);
-  //execSync(`docker push ${tag}`, { stdio: 'inherit' });
+  execSync(`docker push ${tag}`, { stdio: 'inherit' });
 });
