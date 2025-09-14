@@ -2,17 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch DiscOS (Dev)",
-      "type": "node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "npm.cmd",
-      "runtimeArgs": ["run", "dev"],
-      "console": "integratedTerminal",
-      "autoAttachChildProcesses": true
-    },
-    {
-      "name": "Launch DiscOS (Prod)",
+      "name": "Launch DiscOS (Windows)",
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}",
@@ -22,14 +12,14 @@
       "autoAttachChildProcesses": true
     },
     {
-      "name": "Setup DiscOS",
+      "name": "Launch DiscOS (Linux)",
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "npm.cmd",
-      "runtimeArgs": ["run", "setup"],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start"],
       "console": "integratedTerminal",
-      "autoAttachChildProcesses": false
+      "autoAttachChildProcesses": true
     }
   ]
 }
