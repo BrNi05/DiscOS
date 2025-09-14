@@ -1,5 +1,7 @@
-const { execSync } = require('child_process');
-const { version } = require('../package.json');
+import { execSync } from 'child_process';
+import pkg from '../package.json' assert { type: 'json' };
+
+const { version } = pkg;
 
 const tags = [
   'discos:latest',
