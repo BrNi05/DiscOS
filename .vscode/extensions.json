@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-azuretools.vscode-docker",
+    "mikestead.dotenv",
+    "redhat.vscode-yaml",
+    "mads-hartmann.bash-ide-vscode",
+    "timonwong.shellcheck",
+    "aaron-bond.better-comments"
+  ],
+  "unwantedRecommendations": []
+}
