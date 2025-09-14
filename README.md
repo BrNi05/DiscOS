@@ -55,8 +55,8 @@ DiscOS is a secure interaction bridge between Discord and Linux servers, letting
 ## Ways to use
 
 - As a Systemd service
-- As an `npm` package
-- In a Docker container (**non-rootless mode**)
+- As an [npm package](https://www.npmjs.com/package/discos)
+- In a [Docker container](https://hub.docker.com/repository/docker/brni05/discos) (**non-rootless mode**)
 - Compile the code and create an own solution
 
 ## Notice
