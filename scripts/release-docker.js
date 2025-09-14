@@ -1,5 +1,12 @@
-const { execSync } = require('child_process');
-const { version } = require('../package.json');
+import { execSync } from 'child_process';
+import { readFile } from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const dir = path.dirname(fileURLToPath(import.meta.url));
+
+const pkg = JSON.parse(await readFile(path.join(dir, '../package.json'), 'utf-8'));
+const { version } = pkg;
 
 const tags = [
   'discos:latest',

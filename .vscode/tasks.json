@@ -2,35 +2,77 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start DiscOS (Dev)",
+      "label": "Build",
       "type": "shell",
       "command": "npm.cmd",
-      "args": ["run", "dev"],
-      "options": {
-        "cwd": "${workspaceFolder}"
+      "args": ["run", "build"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
       },
-      "group": "build",
       "problemMatcher": []
     },
     {
-      "label": "Start DiscOS (Prod)",
+      "label": "Start DiscOS",
       "type": "shell",
       "command": "npm.cmd",
       "args": ["run", "start"],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "group": "build",
+      "group": "none",
       "problemMatcher": []
     },
     {
-      "label": "Setup DiscOS",
+      "label": "Register slash commands",
       "type": "shell",
       "command": "npm.cmd",
       "args": ["run", "setup"],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Build",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "docker:build"],
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Start Container",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "docker:up"],
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Stop Container",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "docker:down"],
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Prune",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "docker:prune"],
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: pack (local)",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "pack"],
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "Unset Git Hooks",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "unsafe"],
       "group": "none",
       "problemMatcher": []
     }

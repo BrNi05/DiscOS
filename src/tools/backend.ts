@@ -200,12 +200,17 @@ export async function updateExternalBackendDatabase(database: DB, queues: Comman
   const validationPayload: ICommandQueueItem = { user: ROOT_UID, cmd: DB_UPDATE };
   queueUtils.addToAll(queues, validationPayload);
 
-  await axios.put(Config.backend + '/' + DB_UPDATE, database, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    validateStatus: (status) => status <= 500,
-  });
+  try {
+    await axios.put(Config.backend + '/' + DB_UPDATE, database, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      validateStatus: (status) => status <= 500,
+    });
+  } catch {
+    // Any non-HTTP but network error (e.g. DNS resolution failure)
+    console.error(COMMON.NETWORK_ERR);
+  }
 
   queueUtils.tryRemoveInQueue(queues.validationQueue, validationPayload);
 }

@@ -339,3 +339,5 @@ export const PING_FAILED = 'Ping failed: ';
 export const EXTERNAL_OK = 'External backend is online and responded to the health check ping.';
 export const EXTERNAL_NORESPONSE =
   'WARNING! The external backend did not respond to the health check ping. It may be offline or unreachable.';
+
+export const NETWORK_ERR = 'DiscOS ERROR: Network error while trying to connect to the backend.';
