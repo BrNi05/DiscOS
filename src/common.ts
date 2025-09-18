@@ -1,5 +1,5 @@
 // Platform validation
-export const PLATFORM_ERR = 'DiscOS CRITICAL ERROR: Only Linux is supported. Startup aborted.';
+export const PLATFORM_ERR = 'DiscOS ERROR: Only Linux is supported. Startup aborted.';
 
 // dotenv validation
 export function ENV_MISSING_VAR(missingVars: string[]): string {
@@ -20,8 +20,8 @@ export const ENV_QUICK_VIEW_MAX_LENGTH = 'DiscOS ERROR: QUICK_VIEW_MAX_LENGTH mu
 // DB validation
 export const DB_ERR = 'DiscOS ERROR: Database file is invalid or missing.';
 export const DB_USER_ERR = 'DiscOS ERROR: users must be an object with numeric string keys (Discord UIDs) and string values (local users).';
-export const DB_USERS_EMPTY = 'DiscOS WARN: No users found in database.';
-export const DB_USERS_INVALID = 'User IDs must be numeric strings at least 17 characters long.';
+export const DB_USERS_EMPTY = 'DiscOS ERROR: No users found in database.';
+export const DB_USERS_INVALID = 'DiscOS ERROR: User IDs must be numeric strings at least 17 characters long.';
 export const DB_ADMIN_ERR = 'DiscOS ERROR: adminUsers must be an array of numeric strings with at least 17 characters.';
 export const DB_NO_ADMIN = 'DiscOS ERROR: There must be at least one admin user in the database.';
 export const DB_ADMIN_INVALID = 'DiscOS ERROR: adminUsers must be a non-empty array of numeric strings with at least 17 characters.';
@@ -329,11 +329,11 @@ export function ADMIN_GOODBYE(user: string): string {
 export const UNAME_PREFIX = 'discos';
 
 // Backend
-export const SPAWN_ERR = 'DiscOS CRITICAL ERROR: cmdex is broken.';
-export const DIR_ERR = 'The provided path is an existing directory.';
-export const PERM_ERR = 'No permission to write to the file (or to enter the directories).';
-export const DOWNLOAD_ERR = 'Failed to download file from Discord CDN.';
-export const SET_PERM_ERR = 'Failed to set file permissions.';
+export const SPAWN_ERR = 'DiscOS ERROR: cmdex is broken.';
+export const EB_DIR_ERR = 'The provided path is an existing directory.';
+export const EB_PERM_ERR = 'No permission to write to the file (or to enter the directories).';
+export const EB_DOWNLOAD_ERR = 'Failed to download file from Discord CDN.';
+export const EB_SET_PERM_ERR = 'Failed to set file permissions.';
 
 export const PING_FAILED = 'Ping failed: ';
 export const EXTERNAL_OK = 'External backend is online and responded to the health check ping.';
@@ -341,3 +341,8 @@ export const EXTERNAL_NORESPONSE =
   'WARNING! The external backend did not respond to the health check ping. It may be offline or unreachable.';
 
 export const NETWORK_ERR = 'DiscOS ERROR: Network error while trying to connect to the backend.';
+
+// External backend specific
+export const EB_DB_ERR = 'DiscOS has encountered a critical error. Please contact the administrator.';
+export const EB_PAYLOAD_INVALID = 'DiscOS ERROR: Payload validation failed.';
+export const EB_GENERIC_ERR = 'DiscOS has encountered an unknown error. Failed to execute command.';
