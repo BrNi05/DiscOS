@@ -29,20 +29,24 @@ const execAsync = promisify(exec);
 
 // Determines local user (based on Discord UID)
 async function localUser(user: string): Promise<string> {
-  // Handle root user (for admos root <command>)
-  if (user === ROOT_UID) {
-    return 'root';
+  try {
+    // Handle root user (for admos root <command>)
+    if (user === ROOT_UID) {
+      return 'root';
+    }
+
+    const dbContent: string = await readFile(Config.databasePath, 'utf-8');
+    const dbParsed = JSON.parse(dbContent) as {
+      users: Record<string, string>;
+    };
+
+    // Cannot be null, since only an allowedUser can send commands
+    const serverUser: string = dbParsed.users[user];
+
+    return shellEscape([serverUser]);
+  } catch {
+    return '.'; // Silently fail (cmd exec will return an error), but encountering such an error is basically impossible
   }
-
-  const dbContent: string = await readFile(Config.databasePath, 'utf-8');
-  const dbParsed = JSON.parse(dbContent) as {
-    users: Record<string, string>;
-  };
-
-  // Cannot be null, since only an allowedUser can send commands
-  const serverUser: string = dbParsed.users[user];
-
-  return shellEscape([serverUser]);
 }
 
 // Axios response creation
@@ -98,21 +102,21 @@ async function fileWrite(url: string, path: string, payload: ICommandQueueItem):
   const isDirCmd = shellEscape([`[ -d ${escapedPath} ] && echo 1 || echo 0`]);
   let { stdout } = await execAsync(`sudo /usr/local/bin/cmdex ${serverUser} ${isDirCmd}`);
   if (stdout.trim() === '1') {
-    return COMMON.DIR_ERR;
+    return COMMON.EB_DIR_ERR;
   }
 
   // Test if the user has permission to write to the file (while creating the neccessary directories)
   const testPermissionCmd = shellEscape([`mkdir -p "$(dirname ${escapedPath})" && echo > ${escapedPath} && rm -f ${escapedPath}`]);
   ({ stdout } = await execAsync(`sudo /usr/local/bin/cmdex ${serverUser} ${testPermissionCmd}`));
   if (stdout.trim() !== '') {
-    return COMMON.PERM_ERR;
+    return COMMON.EB_PERM_ERR;
   }
 
   // Download the file from Discord CDN
   const curlCmd = shellEscape([`curl -fsSL ${safeUrl} -o ${escapedPath}`]);
   ({ stdout } = await execAsync(`sudo /usr/local/bin/cmdex ${serverUser} ${curlCmd}`));
   if (stdout.trim() !== '') {
-    return COMMON.DOWNLOAD_ERR;
+    return COMMON.EB_DOWNLOAD_ERR;
   }
 
   // Set the file permissions to 660
@@ -123,7 +127,7 @@ async function fileWrite(url: string, path: string, payload: ICommandQueueItem):
   const permCmd = shellEscape([`cd ${userHomeDir} && chown ${serverUser}:${serverUser} ${escapedPath} && chmod 644 ${escapedPath}`]);
   ({ stdout } = await execAsync(`sudo /usr/local/bin/cmdex root ${permCmd}`));
   if (stdout.trim() !== '') {
-    return COMMON.SET_PERM_ERR;
+    return COMMON.EB_SET_PERM_ERR;
   }
 
   return WRITE_OP_SUCCESS;
