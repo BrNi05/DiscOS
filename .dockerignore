@@ -10,7 +10,7 @@ setup
 .env
 .env.example
 .eslintcache
-gitattributes
+.gitattributes
 .gitignore
 .prettierignore
 .prettierrc
