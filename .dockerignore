@@ -15,7 +15,7 @@ gitattributes
 .prettierignore
 .prettierrc
 db.json
-docker-compose.yml
+docker-compose.yaml
 Dockerfile
 eslint.config.js
 LICENSE
