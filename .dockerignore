@@ -18,7 +18,7 @@ setup
 db.json
 docker-compose.yaml
 Dockerfile
-eslint.config.js
+eslint.config.ts
 LICENSE
 *.md
 tsconfig.tsbuildinfo
