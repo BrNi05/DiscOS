@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction, AutocompleteInteraction, CacheType, Attachment } from 'discord.js';
 import { AttachmentBuilder } from 'discord.js';
-import PATH from 'path';
+import PATH from 'node:path';
 
 // File type detection
 import { fileTypeFromBuffer } from 'file-type';
@@ -63,7 +63,6 @@ export async function read(
       decoder.decode(buffer);
       isUtf8Decodable = true;
     } catch {
-      isUtf8Decodable = false;
       await interaction.editReply({
         content: COMMON.OS_ERR_MSG(username),
       });

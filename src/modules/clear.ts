@@ -16,9 +16,7 @@ export async function clearHistory(
   let deleteCount: number = 0;
 
   // Admos: if user provided no target user, clear all messages from the bot
-  if (username === COMMON.CLEAR_ALL_USER) {
-    username = '';
-  }
+  if (username === COMMON.CLEAR_ALL_USER) username = '';
 
   while (loop) {
     // Fetch the last 100 messages from the channel
@@ -36,19 +34,19 @@ export async function clearHistory(
 
     // Messages to be deleted
     const toDelete = lookback === -1 ? filtered : filtered.slice(0, lookback);
-    if (toDelete.length !== 0) {
+    if (toDelete.length == 0) {
+      loop = false; // No more messages to delete
+    } else {
       const deletions = toDelete.map((m) => m.delete().catch(() => null));
       await Promise.all(deletions);
 
       deleteCount += toDelete.length; // follow the number of deleted messages
       lookback = Math.max(0, lookback - toDelete.length); // reduce the lookback count (so the next iteration won't delete too much messages)
       loop = lookback !== 0; // Continue if there are more messages to be deleted
-    } else {
-      loop = false; // No more messages to delete
     }
 
-    // Sleep a little to avoid API rate limits
-    await sleep(500);
+    // Sleep a bit to avoid API rate limits
+    await sleep(200);
   }
 
   // Reply

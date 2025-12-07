@@ -46,8 +46,8 @@ export function validateDotenv(): boolean {
   }
 
   // CMD_QUEUE_MAX_SIZE is a positive integer
-  const cmdQueueMaxSize = parseInt(process.env.CMD_QUEUE_MAX_SIZE!, 10);
-  if (isNaN(cmdQueueMaxSize) || cmdQueueMaxSize <= 0) {
+  const cmdQueueMaxSize = Number.parseInt(process.env.CMD_QUEUE_MAX_SIZE!, 10);
+  if (Number.isNaN(cmdQueueMaxSize) || cmdQueueMaxSize <= 0) {
     console.error(COMMON.ENV_QUEUE_MAX);
     return false;
   }
@@ -68,8 +68,8 @@ export function validateDotenv(): boolean {
   Config.databasePath = process.env.DATABASE_PATH!;
 
   // FILE_MAX_SIZE is a positive integer and not more then 1000MB
-  const fileMaxSize = parseInt(process.env.FILE_MAX_SIZE!, 10);
-  if (isNaN(fileMaxSize) || fileMaxSize <= 0 || fileMaxSize > 1000) {
+  const fileMaxSize = Number.parseInt(process.env.FILE_MAX_SIZE!, 10);
+  if (Number.isNaN(fileMaxSize) || fileMaxSize <= 0 || fileMaxSize > 1000) {
     console.error(COMMON.ENV_FILE_MAX);
     return false;
   }
@@ -77,7 +77,7 @@ export function validateDotenv(): boolean {
 
   // READ_BIN_OVERRIDE is a comma-separated list of binaries
   const readBinOverride = process.env.READ_BIN_OVERRIDE!.split(',').map((bin) => bin.trim());
-  if (readBinOverride.length === 0 || readBinOverride.some((bin) => bin === '')) {
+  if (readBinOverride.length === 0 || readBinOverride.includes('')) {
     console.error(COMMON.ENV_BIN_OVERRIDE);
     return false;
   }
@@ -92,8 +92,8 @@ export function validateDotenv(): boolean {
   Config.quickView = quickView;
 
   // QUICK_VIEW_MAX_LENGTH is a positive integer, max 2000
-  const quickViewMaxLength = parseInt(process.env.QUICK_VIEW_MAX_LENGTH!, 10);
-  if (isNaN(quickViewMaxLength) || quickViewMaxLength <= 0 || quickViewMaxLength > 2000) {
+  const quickViewMaxLength = Number.parseInt(process.env.QUICK_VIEW_MAX_LENGTH!, 10);
+  if (Number.isNaN(quickViewMaxLength) || quickViewMaxLength <= 0 || quickViewMaxLength > 2000) {
     console.error(COMMON.ENV_QUICK_VIEW_MAX_LENGTH);
     return false;
   }
