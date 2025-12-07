@@ -26,7 +26,7 @@ import { debug } from './modules/debug.js';
 import { handleAdmin, localUserAutocomplete } from './modules/admin.js';
 
 // Path helper
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 // Start DiscOS func
 export function startDiscOS(): void {

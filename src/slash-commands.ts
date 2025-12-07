@@ -7,7 +7,7 @@ import { validateDotenv } from './tools/validateDotenv.js';
 import * as COMMON from './common.js';
 
 // Path helper
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 export function registerSlashCommands(): void {
   // Load and validate environment variables

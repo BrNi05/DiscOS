@@ -1,7 +1,7 @@
-import { execSync } from 'child_process';
-import { readFile } from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { execSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -17,7 +17,7 @@ const tags = [
 console.log('Building Docker image with tags: ', tags.join(', '));
 execSync(`docker build ${tags.map(t => '-t ' + t).join(' ')} .`, { stdio: 'inherit' });
 
-tags.slice(1).forEach(tag => {
-  console.log('Pushing Docker tag: ', tag);
+for (const tag of tags.slice(1)) {
+  console.log('Pushing Docker tag:', tag);
   execSync(`docker push ${tag}`, { stdio: 'inherit' });
-});
+}
