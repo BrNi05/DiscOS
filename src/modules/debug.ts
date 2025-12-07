@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction, CacheType, Client } from 'discord.js';
-import os from 'os';
+import os from 'node:os';
 
 // Config file
 import { Config } from '../config.js';

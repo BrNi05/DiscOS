@@ -20,7 +20,7 @@ import { Config } from '../config.js';
 import { clearHistory } from './clear.js';
 
 // DB-related
-import fs from 'fs';
+import fs from 'node:fs';
 import type { DB } from '../shared/types.js';
 import { validateDb } from '../tools/validateDb.js';
 
@@ -45,7 +45,7 @@ async function dbPrep(interaction: ChatInputCommandInteraction<CacheType>): Prom
     const rawData = fs.readFileSync(Config.databasePath, 'utf-8');
     const db = JSON.parse(rawData) as DB;
 
-    if (typeof db !== 'object' || db === null) throw new Error();
+    if (typeof db !== 'object' || db === null) throw new Error('Database could not be read or parsed.');
     return db;
   } catch {
     await interaction.editReply({
@@ -143,10 +143,8 @@ async function localUserHandler(localUser: string, propagate: boolean, operation
 
         return LOCAL_USER_SUCCESS;
       }
-    } else {
-      if (!userExists) {
-        return LOCAL_USER_FAILED;
-      }
+    } else if (!userExists) {
+      return LOCAL_USER_FAILED;
     }
   } else {
     // It is checked on call, if only this user is assigned this local user
@@ -174,7 +172,7 @@ function truncUname(input: string): string {
   input = input.toLowerCase().trim();
 
   // Sanitize the username
-  input = input.replace(/[^a-z0-9_.]/g, '');
+  input = input.replaceAll(/[^a-z0-9_.]/g, '');
 
   if (input.length > MAX_LEN) {
     return input.substring(0, MAX_LEN);
@@ -344,11 +342,12 @@ export async function handleAdmin(
         content: COMMON.ADMIN_OPS(targetUser, localUser, true, existed, false),
       });
 
-      if (!adminAsWell) await sendDM(client, userId, COMMON.USER_GREETING(targetUser, localUser, guildName));
-      else {
+      if (adminAsWell) {
         dbClose(db, queues); // update the DB before calling (to have the user registered)
         await new Promise((r) => setTimeout(r, 2000)); // wait 2 sec
         await adminMgmt(interaction, client);
+      } else {
+        await sendDM(client, userId, COMMON.USER_GREETING(targetUser, localUser, guildName));
       }
     } else {
       if (Object.keys(db.users).length === 1) {

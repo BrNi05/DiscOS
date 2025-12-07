@@ -1,5 +1,4 @@
-import axios, { type InternalAxiosRequestConfig } from 'axios';
-import type { AxiosResponse } from 'axios';
+import axios, { type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 
 // Config file
 import { Config } from '../config.js';
@@ -9,22 +8,21 @@ import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces.
 
 // Types
 import type { DB } from '../shared/types.js';
-import { DB_UPDATE } from '../shared/consts.js';
 
 // Consts
 import * as COMMON from '../common.js';
-import { ROOT_UID, PING_RESPONSE } from '../shared/consts.js';
+import { ROOT_UID, PING_RESPONSE, DB_UPDATE } from '../shared/consts.js';
 const WRITE_OP_SUCCESS = '';
 
 // Helpers
-import type { CommandQueues } from 'src/types/queues.js';
+import type { CommandQueues } from '../types/queues.js';
 import * as queueUtils from '../tools/queue-utils.js';
 
 // Exec-related
 import shellEscape from 'shell-escape';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { readFile } from 'fs/promises';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
+import { readFile } from 'node:fs/promises';
 const execAsync = promisify(exec);
 
 // Determines local user (based on Discord UID)

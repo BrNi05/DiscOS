@@ -21,7 +21,7 @@ export function tryRemoveInQueue(queue: ICommandQueueItem[], req: ICommandQueueI
 }
 
 export function isInQueue(queue: ICommandQueueItem[], req: ICommandQueueItem): boolean {
-  return queue.findIndex((item) => item.user === req.user && item.cmd === req.cmd) !== -1;
+  return queue.some((item) => item.user === req.user && item.cmd === req.cmd);
 }
 
 export async function handleDuplicate(

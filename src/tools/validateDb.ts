@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 
 import * as COMMON from '../common.js';
 import type { DB } from '../shared/types.js';
@@ -7,7 +7,7 @@ import { Config } from '../config.js';
 
 import { updateExternalBackendDatabase } from './backend.js';
 
-import type { CommandQueues } from 'src/types/queues.js';
+import type { CommandQueues } from '../types/queues.js';
 
 // UDI and CID validation
 const isValidId = (id: string) => /^\d{17,}$/.test(id);
