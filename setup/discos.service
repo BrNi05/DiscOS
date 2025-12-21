@@ -10,8 +10,8 @@ FailureAction=none
 
 [Service]
 Type=simple
-User=discos
-Group=discos
+User=root
+Group=root
 WorkingDirectory=WD_PATH
 EnvironmentFile=WD_PATH/.env
 ExecStart=/bin/bash -c 'export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"; exec node WD_PATH/dist/startup.js'
@@ -20,7 +20,7 @@ StandardError=journal
 SyslogIdentifier=DiscOS
 
 # IO and CPU
-Nice=-5
+Nice=-10
 IOSchedulingClass=best-effort
 IOSchedulingPriority=0
 
