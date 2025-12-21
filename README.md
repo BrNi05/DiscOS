@@ -49,8 +49,8 @@ DiscOS is a secure interaction bridge between Discord and Linux servers, letting
 
 - Commands that are interactive (require user input) are not supported
 - Discord API limitations apply
-- Each command runs a fresh login shell, so no environment, working directory, or state is preserved between executions
-- Shell initialization files for interactive, non-login shells (e.g. `.bashrc`, `.zshrc`) are not read (but there is a workaround)
+- Supported shell: `Bash` - all pseudoterminals are spawned using `Bash`
+- The admin PTY is shared, meaning all admins will use a shared terminal
 
 ## Ways to use
 
