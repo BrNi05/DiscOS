@@ -2,27 +2,30 @@ import type { ChatInputCommandInteraction, AutocompleteInteraction, CacheType, G
 
 // Modules
 import { execCommand } from './command.js';
-import { startIPCServer } from '../tools/ipcServer.js';
+import { startIPCServer } from '../security/ipcServer.js';
+import { clearHistory } from './clear.js';
 
 // Helpers
-import * as queueUtils from '../tools/queue-utils.js';
-import { ping, post } from '../tools/backend.js';
+import * as queueUtils from '../security/queue-utils.js';
+import { ping, post } from '../exec/backend.js';
+import { destroyTerminalForUser, syncTerminalsWithConfig, INTERNAL_UID, INTERNAL_UNAME } from '../exec/terminal-manager.js';
+import logger from '../logging/logger.js';
 import shellEscape from 'shell-escape';
 
 // Consts and interfaces
 import * as COMMON from '../common.js';
 import type { ICommandQueueItem } from '../shared/interfaces.js';
-import type { CommandQueues } from '../types/queues.js';
+import type { CommandQueues } from '../interfaces/queues.js';
 import { ROOT_UID } from '../shared/consts.js';
 
 // Config file
-import { Config } from '../config.js';
-import { clearHistory } from './clear.js';
+import { Config } from '../config/config.js';
 
 // DB-related
 import fs from 'node:fs';
 import type { DB } from '../shared/types.js';
-import { validateDb } from '../tools/validateDb.js';
+import { validateDb } from '../config/validateDb.js';
+import { discordUsername } from '../exec/username.js';
 
 // User listing helper
 async function listUsers(interaction: ChatInputCommandInteraction<CacheType>, guild: Guild, group: string[]): Promise<void> {
@@ -73,18 +76,19 @@ export async function localUserAutocomplete(interaction: AutocompleteInteraction
 
   // Find suggestions
   const payload: ICommandQueueItem = {
-    user: ROOT_UID,
+    user: INTERNAL_UID,
+    username: INTERNAL_UNAME,
     cmd: `grep -vE ':(/usr/sbin/nologin|/bin/false|/sbin/nologin)$' /etc/passwd | cut -d: -f1 | grep -F -- "${shellEscape([focusedValue])}" | head -n 5`,
   };
 
   queueUtils.addToAll(queues, payload);
-  const res = await post(payload, false);
+  const res = await post(payload, false, true);
   queueUtils.removeFromAll(queues, payload);
 
   const items: string[] = (res.data as Buffer)
     .toString('utf-8')
     .split('\n')
-    .filter((item) => item.trim());
+    .filter((item) => item.trim() !== '');
 
   // Items array shouldn't be empty (causes Discod API error and app crash)
   if (items.length === 0) {
@@ -117,12 +121,13 @@ async function localUserHandler(localUser: string, propagate: boolean, operation
   if (operation) {
     // Check if the local user exists
     const payload: ICommandQueueItem = {
-      user: ROOT_UID,
+      user: INTERNAL_UID,
+      username: INTERNAL_UNAME,
       cmd: `id -u ${shellEscape([localUser])}`,
     };
 
     queueUtils.addToAll(queue, payload);
-    const res = await post(payload, false);
+    const res = await post(payload, false, true);
     queueUtils.removeFromAll(queue, payload);
 
     let userExists = true;
@@ -133,12 +138,13 @@ async function localUserHandler(localUser: string, propagate: boolean, operation
     if (propagate) {
       if (!userExists) {
         const payload: ICommandQueueItem = {
-          user: ROOT_UID,
+          user: INTERNAL_UID,
+          username: INTERNAL_UNAME,
           cmd: `useradd -m ${shellEscape([localUser])}`,
         };
 
         queueUtils.addToAll(queue, payload);
-        await post(payload, false);
+        await post(payload, false, true);
         queueUtils.removeFromAll(queue, payload);
 
         return LOCAL_USER_SUCCESS;
@@ -150,12 +156,13 @@ async function localUserHandler(localUser: string, propagate: boolean, operation
     // It is checked on call, if only this user is assigned this local user
     if (propagate) {
       const payload: ICommandQueueItem = {
-        user: ROOT_UID,
+        user: INTERNAL_UID,
+        username: INTERNAL_UNAME,
         cmd: `id -u ${shellEscape([localUser])} >/dev/null 2>&1 && userdel -r ${shellEscape([localUser])} >/dev/null 2>&1`,
       };
 
       queueUtils.addToAll(queue, payload);
-      void post(payload, false);
+      void post(payload, false, true);
       queueUtils.removeFromAll(queue, payload);
     }
 
@@ -247,6 +254,11 @@ export async function handleAdmin(
       await rootCommand(interaction);
       break;
     }
+    case COMMON.RESET: {
+      destroyTerminalForUser(ROOT_UID);
+      await interaction.editReply({ content: COMMON.PTY_RESET_SUCCESS });
+      break;
+    }
     case COMMON.HELP: {
       await interaction.editReply({ content: COMMON.HELP_ADMIN });
       break;
@@ -255,6 +267,8 @@ export async function handleAdmin(
 
   // /admos kill
   async function kill(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
+    logger.info(COMMON.ADMIN_KILL_LOG(discordUsername(interaction)));
+
     await interaction.editReply({
       content: COMMON.SHUTDOWN_MSG,
     });
@@ -276,8 +290,10 @@ export async function handleAdmin(
     // Start/stop IPC server
     if (Config.standalone && !standalone) {
       Config.ipcServer = startIPCServer(queues); // switch to backend mode
+      logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), 'backend'));
     } else if (!Config.standalone && standalone) {
       Config.ipcServer!.close(); // switch to standalone mode
+      logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), 'standalone'));
       Config.ipcServer = null;
     }
 
@@ -302,12 +318,14 @@ export async function handleAdmin(
     db.safemode = enabled; // write to DB, then load it to Config
     dbClose(db, queues);
 
+    logger.info(COMMON.SAFEMODE_SWITCHED_LOG(discordUsername(interaction), enabled));
+
     await interaction.editReply({
       content: COMMON.SAFEMODE_REPLY(enabled),
     });
   }
 
-  // /dcadm usermgmt <user> <localProfile> <add?/remove?>
+  // /admos usermgmt <user> <localProfile> <add?/remove?>
   async function userMgmt(interaction: ChatInputCommandInteraction<CacheType>, client: Client): Promise<void> {
     const userObj = interaction.options.getUser(COMMON.USER, true);
     const guildName = interaction.guild!.name;
@@ -317,6 +335,8 @@ export async function handleAdmin(
     let localUser = interaction.options.getString(COMMON.LOCAL_USER, false)?.trim() ?? userObj.username; // optional field: use the Discord name if not provided
     const propagate = interaction.options.getBoolean(COMMON.PROPAGATE, false) ?? COMMON.DEFAULT_PROPAGATE;
     const adminAsWell = interaction.options.getBoolean(COMMON.ADMIN_AS_WELL, false) ?? COMMON.DEFAULT_ADMIN_AS_WELL;
+
+    logger.info(COMMON.USERMGMT_LOG(discordUsername(interaction), operation, targetUser, localUser, propagate, adminAsWell));
 
     let deleteUser = false; // only used on user removal
 
@@ -378,15 +398,20 @@ export async function handleAdmin(
     }
 
     if (!adminAsWell) dbClose(db, queues); // do not overwrite the changes made by adminMgmt
+
+    // Sync terminals
+    await syncTerminalsWithConfig();
   }
 
-  // /dcadm adminmgmt <user> <add?/remove?>
+  // /admos adminmgmt <user> <add?/remove?>
   async function adminMgmt(interaction: ChatInputCommandInteraction<CacheType>, client: Client): Promise<void> {
     const userObj = interaction.options.getUser(COMMON.USER, true);
     const guildName = interaction.guild!.name;
     const targetUser: string = userObj.username;
     const userId = userObj.id;
     const operation = interaction.options.getBoolean(COMMON.OPERATION, true);
+
+    logger.info(COMMON.ADMINMGMT_LOG(discordUsername(interaction), operation, targetUser));
 
     // Check if the user is a DiscOS user
     if (!Config.allowedUsers.includes(userId)) {
@@ -426,12 +451,14 @@ export async function handleAdmin(
     dbClose(db, queues);
   }
 
-  // /dcadm chmgmt <channel> <add?/remove?>
+  // /admos chmgmt <channel> <add?/remove?>
   async function chMgmt(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
     const channel = interaction.options.getChannel(COMMON.CHANNEL, true);
     const channelId = channel.id;
     const channelName = channel.name!;
     const operation = interaction.options.getBoolean(COMMON.OPERATION, true);
+
+    logger.info(COMMON.CHMGMT_LOG(discordUsername(interaction), operation, channelName));
 
     const db = await dbPrep(interaction);
     if (!db) return;
@@ -458,7 +485,7 @@ export async function handleAdmin(
     dbClose(db, queues);
   }
 
-  // /dcadm lockdown <true?>
+  // /admos lockdown <true?>
   async function lockdown(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
     const enabled = interaction.options.getBoolean(COMMON.ENABLED, true);
 
@@ -468,6 +495,8 @@ export async function handleAdmin(
     db.lockdown = enabled; // write to DB, then load it to Config
     dbClose(db, queues);
 
+    logger.info(COMMON.LOCKDOWN_SWITCHED_LOG(discordUsername(interaction), enabled));
+
     await interaction.editReply({
       content: COMMON.LOCKDOWN_REPLY(enabled),
     });
@@ -476,7 +505,7 @@ export async function handleAdmin(
   // /admos root <command>
   async function rootCommand(interaction: ChatInputCommandInteraction<CacheType>) {
     const command = interaction.options.getString(COMMON.CMD, true);
-    const payload: ICommandQueueItem = { user: ROOT_UID, cmd: command };
+    const payload: ICommandQueueItem = { user: ROOT_UID, username: discordUsername(interaction), cmd: command };
 
     // Backend will validate it
     queueUtils.addToAll(queues, payload);

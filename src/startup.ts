@@ -1,38 +1,42 @@
-import type { Attachment } from 'discord.js';
-import { Client, GatewayIntentBits, Events } from 'discord.js';
+import { Client, GatewayIntentBits, Events, type Attachment } from 'discord.js';
 
 // Helpers
-import { validateDotenv } from './tools/validateDotenv.js';
-import { validateDb } from './tools/validateDb.js';
-import { startIPCServer } from './tools/ipcServer.js';
-import * as queueUtils from './tools/queue-utils.js';
-import { ping } from './tools/backend.js';
-
-// Database config file
-import { Config } from './config.js';
+import { validateDotenv } from './config/validateDotenv.js';
+import { validateDb } from './config/validateDb.js';
+import { Config } from './config/config.js';
+import { startIPCServer } from './security/ipcServer.js';
+import * as queueUtils from './security/queue-utils.js';
+import { ping } from './exec/backend.js';
+import { discordUsername } from './exec/username.js';
+import { destroyTerminalForUser, initTerminalsFromConfig } from './exec/terminal-manager.js';
+import logger from './logging/logger.js';
 
 // Consts and project-scoped types
 import * as COMMON from './common.js';
 import type { ICommandQueueItem } from './shared/interfaces.js';
-import type { CommandQueues } from './types/queues.js';
+import type { CommandQueues } from './interfaces/queues.js';
 
 // Modules
 import { registerSlashCommands } from './slash-commands.js';
 import { execCommand } from './modules/command.js';
 import { clearHistory } from './modules/clear.js';
-import { read, write, absPath, pathAutocomplete } from './modules/file.js';
+import { read, write, absPath, pathAutocomplete, cwdPath } from './modules/file.js';
 import { watch } from './modules/watch.js';
 import { debug } from './modules/debug.js';
 import { handleAdmin, localUserAutocomplete } from './modules/admin.js';
 
-// Path helper
 import { fileURLToPath } from 'node:url';
+import dns from 'node:dns';
 
-// Start DiscOS func
-export function startDiscOS(): void {
+// DNS settings for Discord connection stability
+dns.setDefaultResultOrder('ipv4first');
+dns.setServers(['1.1.1.1', '8.8.8.8', '1.0.0.1', '8.8.4.4']);
+
+// Start DiscOS function
+export async function startDiscOS(): Promise<void> {
   // Platform validation
   if (process.platform !== 'linux') {
-    console.error(COMMON.PLATFORM_ERR);
+    logger.error(COMMON.PLATFORM_ERR);
     process.exit(1);
   }
 
@@ -51,9 +55,13 @@ export function startDiscOS(): void {
   };
 
   // Validate database and load additional environment variables
-  if (!validateDb(queues)) {
-    process.exit(1);
-  }
+  if (!validateDb(queues)) process.exit(1);
+
+  // Load DB content to Terminal Manager
+  await initTerminalsFromConfig();
+
+  // Warn user if the PTY test mode is enabled
+  if (process.env.PTY_TEST_MODE) logger.warn(COMMON.PTY_TEST_MODE_WARN);
 
   // IPC server init (if not in standalone mode)
   // In unsafe mode, the IPC server is still active, but always returns validated status
@@ -66,19 +74,14 @@ export function startDiscOS(): void {
   });
 
   // Ping external backend (if not in standalone mode)
-  if (!Config.standalone) {
-    void ping();
-  }
+  if (!Config.standalone) void ping();
 
   // Discord event listener (with filtering)
   client.on(Events.InteractionCreate, async (interaction) => {
     // Path autocomplete handler
     if (interaction.isAutocomplete()) {
       const subcommand: string = interaction.options.getSubcommand();
-      if (
-        (interaction.commandName === COMMON.DCOS || interaction.commandName === COMMON.ADMOS) &&
-        (subcommand === COMMON.READ || subcommand === COMMON.WRITE)
-      ) {
+      if (interaction.commandName === COMMON.DCOS && (subcommand === COMMON.READ || subcommand === COMMON.WRITE)) {
         return pathAutocomplete(interaction, queues);
       } else if ((interaction.commandName === COMMON.DCOS || interaction.commandName === COMMON.ADMOS) && subcommand === COMMON.USER_MGMT) {
         return localUserAutocomplete(interaction, queues);
@@ -116,11 +119,7 @@ export function startDiscOS(): void {
     // Process the command and context
     const subcommand = interaction.options.getSubcommand();
     const userId = interaction.user.id;
-    const username =
-      interaction.member && 'nickname' in interaction.member
-        ? (interaction.member.nickname ?? interaction.user.username)
-        : (interaction.user.displayName ?? interaction.user.username);
-
+    const username = discordUsername(interaction);
     // Enforce lockdown mode
     const isAdminUser: boolean = Config.adminUsers.includes(userId);
     if (Config.lockdown && !isAdminUser) {
@@ -131,10 +130,7 @@ export function startDiscOS(): void {
     // Handle admin commands
     if (interaction.commandName === COMMON.ADMOS) {
       if (!isAdminUser) {
-        await interaction.reply({
-          content: COMMON.DISCOS_NON_ADMIN,
-          flags: 64,
-        });
+        await interaction.reply({ content: COMMON.DISCOS_NON_ADMIN, flags: 64 });
         return;
       }
       await handleAdmin(interaction, subcommand, username, queues, client);
@@ -155,7 +151,7 @@ export function startDiscOS(): void {
 
     switch (subcommand) {
       case COMMON.EXEC: {
-        const linuxCmd = interaction.options.getString(COMMON.CMD, true)?.trim() || COMMON.FALLBACK_CMD;
+        const linuxCmd = interaction.options.getString(COMMON.CMD, false)?.trim() || ''; // Can be empty since v1.2
         queuedCmd = linuxCmd;
         break;
       }
@@ -172,7 +168,12 @@ export function startDiscOS(): void {
       }
       case COMMON.WRITE: {
         file = interaction.options.getAttachment(COMMON.FILE, true);
-        path = await absPath(interaction.options.getString(COMMON.PATH, false) ?? file.name, userId, queues); // left empty, use the uploaded file's name in CWD
+        path = await absPath(
+          file.name,
+          interaction.options.getString(COMMON.PATH, false) ?? (await cwdPath(file.name, userId, queues)),
+          userId,
+          queues
+        ); // left empty, use the uploaded file's name in CWD
         queuedCmd = `dcos write to ${path}`;
         break;
       }
@@ -187,6 +188,10 @@ export function startDiscOS(): void {
         queuedCmd = 'dcos debug'; // Just dummy register the command
         break;
       }
+      case COMMON.RESET: {
+        queuedCmd = 'dcos reset'; // Just dummy register the command
+        break;
+      }
       case COMMON.HELP: {
         queuedCmd = 'dcos help'; // Just dummy register the command
         break;
@@ -194,15 +199,13 @@ export function startDiscOS(): void {
     }
 
     // Avoid duplicates
-    if (await queueUtils.handleDuplicate(interaction, username, queues.duplicateQueue, { user: userId, cmd: queuedCmd })) {
-      return;
-    }
+    const payload: ICommandQueueItem = { user: userId, username: discordUsername(interaction), cmd: queuedCmd };
+    if (await queueUtils.handleDuplicate(interaction, username, queues.duplicateQueue, payload)) return;
 
     // Avoid Discord timeouts
     await interaction.deferReply({ flags: hideReply ? 64 : undefined });
 
     // Register the command as validated
-    const payload: ICommandQueueItem = { user: userId, cmd: queuedCmd };
     queueUtils.addToAll(queues, payload);
 
     // Handle the commands
@@ -232,6 +235,11 @@ export function startDiscOS(): void {
           await debug(interaction, username, userId, queues, client);
           break;
         }
+        case COMMON.RESET: {
+          destroyTerminalForUser(interaction.user.id);
+          await interaction.editReply({ content: COMMON.PTY_RESET_SUCCESS });
+          break;
+        }
         case COMMON.HELP: {
           await interaction.editReply({ content: COMMON.HELP_USER });
           break;
@@ -247,13 +255,22 @@ export function startDiscOS(): void {
 
   // Connect to Discord servers
   void client.login(process.env.BOT_TOKEN).catch((err) => {
-    console.error(COMMON.DISCOS_CONN_FAIL, err);
+    logger.error(COMMON.DISCOS_CONN_FAIL, err);
     process.exit(1);
+  });
+
+  // Error handling for Discord.js client
+  // Mostly triggered by rate limiting
+  client.on(Events.Error, (err) => {
+    logger.error(COMMON.DISCOS_CLIENT_ERR, err);
   });
 }
 
 // Auto-start DiscOS if it's executed directly with Node
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   registerSlashCommands();
-  startDiscOS();
+  startDiscOS().catch(() => {
+    logger.error(COMMON.DISCOS_STARTUP_ERR);
+    process.exit(1);
+  });
 }

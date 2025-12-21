@@ -1,7 +1,8 @@
 import { REST, Routes, SlashCommandBuilder } from 'discord.js';
 
 // Helpers
-import { validateDotenv } from './tools/validateDotenv.js';
+import { validateDotenv } from './config/validateDotenv.js';
+import logger from './logging/logger.js';
 
 // Consts and project-scoped types
 import * as COMMON from './common.js';
@@ -26,7 +27,7 @@ export function registerSlashCommands(): void {
         .addStringOption((option) => option
           .setName(COMMON.CMD)
           .setDescription(COMMON.CMD_DESC)
-          .setRequired(true))
+          .setRequired(false))
         .addBooleanOption((option) => option
           .setName(COMMON.HIDE)
           .setDescription(COMMON.HIDE_REPLY)
@@ -125,6 +126,13 @@ export function registerSlashCommands(): void {
           .setName(COMMON.HIDE)
           .setDescription(COMMON.HIDE_REPLY)
           .setRequired(false))
+    )
+
+    // /dcos reset
+    .addSubcommand((sub) =>
+      sub
+        .setName(COMMON.RESET)
+        .setDescription(COMMON.RESET_DESC)
     )
 
     // /dcos help
@@ -292,6 +300,13 @@ export function registerSlashCommands(): void {
           .setRequired(true))
     )
 
+    // /admos reset
+    .addSubcommand((sub) =>
+      sub
+        .setName(COMMON.RESET)
+        .setDescription(COMMON.RESET_DESC)
+    )
+
     // /admos help
     .addSubcommand((sub) =>
       sub
@@ -308,13 +323,13 @@ export function registerSlashCommands(): void {
     for (const guildId of guildIds) {
       try {
         await rest.put(Routes.applicationGuildCommands(process.env.APP_ID!, guildId), { body: [command.toJSON(), adminCommand.toJSON()] });
-        console.log(`${COMMON.CMD_REG_1} ${guildId}`);
+        logger.info(`${COMMON.CMD_REG_1} ${guildId}`);
       } catch (err) {
-        console.error(`${COMMON.CMD_REG_2} ${guildId}`, err);
+        logger.error(`${COMMON.CMD_REG_2} ${guildId}`, err);
       }
     }
   })().catch((err) => {
-    console.error(COMMON.CMD_REG_ERR, err);
+    logger.error(COMMON.CMD_REG_ERR, err);
   });
 }
 

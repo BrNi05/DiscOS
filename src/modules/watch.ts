@@ -2,10 +2,11 @@ import type { ChatInputCommandInteraction, CacheType } from 'discord.js';
 import { execCommand } from './command.js';
 
 import * as COMMON from '../common.js';
+import { discordUsername } from '../exec/username.js';
 
 // Repo scoped types
 import type { ICommandQueueItem } from '../shared/interfaces.js';
-import type { CommandQueues } from '../types/queues.js';
+import type { CommandQueues } from '../interfaces/queues.js';
 
 export async function watch(
   interaction: ChatInputCommandInteraction<CacheType>,
@@ -22,15 +23,15 @@ export async function watch(
   // Execute a loop repeat times
   for (let i = 0; i < repeat; i++) {
     // Precompute
-    const cmd = COMMON.WATCH_CMD_BUILD(target, interval, i, repeat);
-    const payload: ICommandQueueItem = { user: userId, cmd: cmd };
+    const cmd = COMMON.WATCH_CMD_BUILD(target, interval, i, repeat, username);
+    const payload: ICommandQueueItem = { user: userId, username: discordUsername(interaction), cmd: cmd };
 
     // If watch fails on the first iteration, don't break the clear logic and log the username
     if (i === 0) lastGoodReply = cmd;
 
     // Execute the command
     // Validation is handled by execCommand()
-    execOutput = await execCommand(payload, interaction, cmd, username, 1, queues);
+    execOutput = await execCommand(payload, interaction, cmd, username, 1, queues, false);
 
     // Check the previous reply (so execOutput)
     const prevReplyContent = execOutput;

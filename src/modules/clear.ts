@@ -29,7 +29,7 @@ export async function clearHistory(
     // Filter messages
     const filtered: Message[] = [...messages.values()]
       .filter((m) => m.author.id === interaction.client.user?.id)
-      .filter((m) => m.content.includes(`@${username}`))
+      .filter((m) => m.content.includes(`${username}`))
       .sort((a, b) => b.createdTimestamp - a.createdTimestamp);
 
     // Messages to be deleted
@@ -46,7 +46,7 @@ export async function clearHistory(
     }
 
     // Sleep a bit to avoid API rate limits
-    await sleep(200);
+    await sleep(100);
   }
 
   // Reply
