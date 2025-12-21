@@ -37,7 +37,8 @@ export default tseslint.config(
       '@typescript-eslint/prefer-ts-expect-error': 'warn',
       '@typescript-eslint/require-await': 'warn',
       '@typescript-eslint/no-misused-promises': ['warn', { checksVoidReturn: false }],
-      'no-debugger': 'warn',
+      'no-debugger': 'error',
+      'no-console': 'warn',
     },
   }
 );
