@@ -7,6 +7,9 @@
 // TypeScript files
 *.ts text eol=lf
 
+// JavaScript files
+*.js text eol=lf
+
 // dotenv
 *.env text eol=lf
 *.env.example text eol=lf
