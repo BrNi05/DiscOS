@@ -2,16 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch DiscOS (Windows)",
-      "type": "node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "npm.cmd",
-      "runtimeArgs": ["run", "start"],
-      "console": "integratedTerminal",
-      "autoAttachChildProcesses": true
-    },
-    {
       "name": "Launch DiscOS (Linux)",
       "type": "node",
       "request": "launch",

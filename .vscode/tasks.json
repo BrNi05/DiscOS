@@ -69,6 +69,14 @@
       "problemMatcher": []
     },
     {
+      "label": "Set Git Hooks",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "safe"],
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
       "label": "Unset Git Hooks",
       "type": "shell",
       "command": "npm",
