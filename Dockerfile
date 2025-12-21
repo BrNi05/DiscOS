@@ -1,13 +1,19 @@
 ##### Stage 1: Build DiscOS #####
 
-FROM node:lts-alpine AS build
+FROM node:lts-trixie-slim AS build
 
 WORKDIR /discos
 
 COPY package*.json ./
 
-# Avoid running husky postinstall scripts
-RUN npm ci --ignore-scripts --silent
+# Install build tools for node-pty
+RUN apt-get update -qq && \
+    apt-get install -y -qq --no-install-recommends \
+    python3 g++ make >/dev/null \
+    sudo bash ca-certificates \
+    && rm -rf /var/lib/apt/lists/* && apt-get clean
+
+RUN npm ci --omit=optional --silent
 
 COPY . .
 
@@ -15,16 +21,20 @@ RUN npm run build
 
 ##### Stage 2: Production #####
 
-FROM node:lts-alpine
+FROM node:lts-trixie-slim
 
 WORKDIR /discos
 
-COPY package*.json ./
-
 ENV NODE_ENV=production
 
-RUN npm ci --omit=dev --omit=optional --silent
+RUN apt-get update -qq && \
+    apt-get install -y -qq --no-install-recommends \
+    sudo bash ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
 
+# Copy compiled artifacts
+COPY --from=build /discos/node_modules ./node_modules
 COPY --from=build /discos/dist ./dist
+COPY package*.json ./
 
 CMD ["node", "dist/startup.js"]
