@@ -2,6 +2,7 @@ services:
   SERVICE_NAME:
     container_name: CONTAINER_NAME
     image: brni05/discos:latest
+    hostname: discos-server
     restart: unless-stopped
     env_file:
       - .env
