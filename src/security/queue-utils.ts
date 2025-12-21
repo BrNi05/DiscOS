@@ -1,7 +1,7 @@
 import type { ChatInputCommandInteraction, CacheType } from 'discord.js';
 import * as COMMON from '../common.js';
 import type { ICommandQueueItem } from '../shared/interfaces.js';
-import type { CommandQueues } from '../types/queues.js';
+import type { CommandQueues } from '../interfaces/queues.js';
 
 export function addToAll(queues: CommandQueues, req: ICommandQueueItem): void {
   queues.validationQueue.push(req);
