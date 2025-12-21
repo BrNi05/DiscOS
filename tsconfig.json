@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "node16",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2024",
+    "lib": ["ES2024"],
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": false,
     "checkJs": false,
-    "target": "ESNext",
-    "lib": ["ES2023"],
     "composite": true,
     "types": ["node", "discord.js"],
     "declaration": true,
