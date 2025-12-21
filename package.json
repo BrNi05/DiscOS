@@ -19,7 +19,7 @@
     "pack": "rm -rf dist && rm -f tsconfig.tsbuildinfo && npm run build && npm pack",
     "format": "prettier --write \"**/*.{ts,json,md}\" --log-level silent",
     "lint": "eslint . --ext .ts --cache",
-    "postinstall": "node -e \"if (process.env.NODE_ENV !== 'production') require('child_process').execSync('git config core.hooksPath .husky')\"",
+    "safe": "git config core.hooksPath .husky",
     "unsafe": "git config --unset core.hooksPath",
     "test": "echo \"No tests specified.\" && exit 0"
   },
@@ -58,7 +58,10 @@
     "discord.js": "^14.22.1",
     "dotenv": "^17.2.1",
     "file-type": "^21.0.0",
-    "shell-escape": "^0.2.0"
+    "node-pty": "^1.1.0-beta43",
+    "shell-escape": "^0.2.0",
+    "strip-ansi": "^7.1.2",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
