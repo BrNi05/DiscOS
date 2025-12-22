@@ -10,7 +10,8 @@ By using DiscOS clones, you agree to [Discord's Privacy Policy](https://discord.
 
 ## 3. Data collection
 
-By default, DiscOS clones do not collect or store any user data, neither do they log user activity.
+By default, DiscOS clones do not collect or store any user data, nor do they log user activity.
+An exception is logging related to security and stability: admin commands, crashes, and critical configuration changes are logged.
 
 ## 4. Instance specific policy
 
@@ -27,3 +28,4 @@ Admins are encouraged to follow the principle of minimal logging as well as secu
 ## 6. Version history
 
 - 2025.08.30: first edition
+- 2025.12.22: second edition (update logging related terms)
