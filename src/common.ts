@@ -61,7 +61,7 @@ export const CMD_DESC = 'The Linux command to execute on the server. Left empty:
 // ############################################################################################################################################# //
 // Subcommand - clear
 export const CLEAR = 'clear';
-export const CLEAR_DESC = 'Clears the (unhidden) command history.';
+export const CLEAR_DESC = 'Clears the non-ephemeral (unhidden) command history.';
 export const LOOKBACK = 'lookback';
 export const LOOKBACK_DESC = 'How many messages to clear (from newest to oldest). Default: all.';
 
