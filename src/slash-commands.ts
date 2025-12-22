@@ -297,7 +297,7 @@ export function registerSlashCommands(): void {
         .addStringOption((option) => option
           .setName(COMMON.CMD)
           .setDescription(COMMON.CMD_DESC)
-          .setRequired(true))
+          .setRequired(false))
     )
 
     // /admos reset

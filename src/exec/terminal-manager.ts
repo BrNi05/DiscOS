@@ -36,7 +36,7 @@ function getUser(dcUid: string, dcUname: string, localUser: string): User {
 export async function execCommand(dcUid: string, discosUser: string, localUser: string, command: string, silent: boolean): Promise<string> {
   const user = getUser(dcUid, discosUser, localUser);
 
-  // Helper func for the user
+  // Default command for /dcos exec and /admos root
   if (!command || command.trim() === '') command = 'pwd';
 
   user.write(command);

@@ -504,7 +504,9 @@ export async function handleAdmin(
 
   // /admos root <command>
   async function rootCommand(interaction: ChatInputCommandInteraction<CacheType>) {
-    const command = interaction.options.getString(COMMON.CMD, true);
+    let command = interaction.options.getString(COMMON.CMD, false);
+    if (!command || command.trim().length === 0) command = ''; // default command, execCommand() will handle it
+
     const payload: ICommandQueueItem = { user: ROOT_UID, username: discordUsername(interaction), cmd: command };
 
     // Backend will validate it
