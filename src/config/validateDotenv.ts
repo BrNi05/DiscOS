@@ -17,6 +17,7 @@ export function validateDotenv(): boolean {
     'READ_BIN_OVERRIDE',
     'QUICK_VIEW',
     'QUICK_VIEW_MAX_LENGTH',
+    'USER_RATE_LIMIT',
   ];
 
   const missingVars: string[] = requiredEnvVars.filter((envVar) => !process.env[envVar]);
@@ -98,6 +99,14 @@ export function validateDotenv(): boolean {
     return false;
   }
   Config.quickViewMaxLength = quickViewMaxLength;
+
+  // USER_RATE_LIMIT is a positive integer, greater than or equal to 2, maximum 30
+  const userRateLimit = Number.parseInt(process.env.USER_RATE_LIMIT!, 10);
+  if (Number.isNaN(userRateLimit) || userRateLimit < 2 || userRateLimit > 30) {
+    logger.error(COMMON.ENV_USER_RATE_LIMIT);
+    return false;
+  }
+  Config.userRateLimit = userRateLimit;
 
   return true;
 }

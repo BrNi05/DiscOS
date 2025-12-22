@@ -17,6 +17,8 @@ export const ENV_BIN_OVERRIDE = '[ENV] READ_BIN_OVERRIDE must be a non-empty com
 export const ENV_QUICK_VIEW =
   "[ENV] QUICK_VIEW must be a non-empty comma-separated list of file extensions. '?' as extension is not allowed.";
 export const ENV_QUICK_VIEW_MAX_LENGTH = '[ENV] QUICK_VIEW_MAX_LENGTH must be a positive integer between 0 and 2000.';
+export const ENV_USER_RATE_LIMIT = '[ENV] USER_RATE_LIMIT must be a positive integer between 2 and 30.';
+
 // ############################################################################################################################################# //
 // DB validation
 export const DB_ERR = '[DB] Database file is invalid or missing.';
@@ -234,6 +236,8 @@ export const DISCOS_GENERIC_ERR2 = 'DiscOS encountered an error. User: @';
 export const DISCOS_CONN_FAIL = 'Connection to Discord failed:';
 export const DISCOS_STARTUP_ERR = 'DiscOS failed to start due to an unknown error. Check the logs for details.';
 export const UNHANDLED_EXCEPTION = 'DiscOS encountered an unhandled exception: ';
+export const USER_RATE_LIMIT =
+  'You have reached the maximum number of concurrent commands allowed. Please wait for your current commands to complete before issuing new ones.';
 
 // ############################################################################################################################################# //
 // index.ts: IPC Server

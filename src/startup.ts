@@ -110,7 +110,13 @@ export async function startDiscOS(): Promise<void> {
       return;
     }
 
-    // Rate-limiting
+    // User-scoped rate limiting
+    if (queueUtils.countUserCommandsInQueue(queues.duplicateQueue, interaction.user.id) >= Config.userRateLimit) {
+      await interaction.reply({ content: COMMON.USER_RATE_LIMIT, flags: 64 });
+      return;
+    }
+
+    // Global rate-limiting
     if (queues.duplicateQueue.length >= Number(Config.cmdQueueMaxSize)) {
       await interaction.reply({ content: COMMON.DISCOS_OVERLOADED, flags: 64 });
       return;
@@ -181,7 +187,7 @@ export async function startDiscOS(): Promise<void> {
         path = interaction.options.getString(COMMON.TARGET, true);
         interval = interaction.options.getInteger(COMMON.INTERVAL, false) ?? interval;
         repeat = interaction.options.getInteger(COMMON.REPEAT, false) ?? repeat;
-        queuedCmd = `dcos watch ${path} ${userId}`;
+        queuedCmd = `dcos watch ${userId}`;
         break;
       }
       case COMMON.DEBUG: {

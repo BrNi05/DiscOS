@@ -44,6 +44,7 @@ export async function debug(
     `Bot User:                 ${client.user!.tag}\n` +
     `Command Queue Size (D):   ${queues.duplicateQueue.length}\n` +
     `Command Queue Size (V):   ${queues.validationQueue.length}\n` +
+    `User Rate Limit:          ${Config.userRateLimit}\n` +
     `Command Queue Max:        ${Config.cmdQueueMaxSize}\n` +
     `Backend URL:              ${Config.backend}\n` +
     `Database Path:            ${Config.databasePath}\n` +
