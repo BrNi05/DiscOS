@@ -8,7 +8,7 @@ Older versions of DiscOS will generally become unsupported when a new release is
 | :-----: | :----------------: | :---------: |
 |  1.0.0  |        :x:         |  in 1.1.0   |
 |  1.1.0  |        :x:         |  in 2.0.0   |
-|  2.0.0  | :white_check_mark: |  in 2.0.0   |
+|  2.0.0  | :white_check_mark: |  in 2.1.0   |
 
 ## Reporting a Vulnerability
 
