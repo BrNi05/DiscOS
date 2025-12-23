@@ -89,7 +89,7 @@ echo -e "All dependencies installed."
 echo -e "\nCloning DiscOS repository into a temporary directory..."
 
 TEMP_DIR=$(mktemp -d)
-chmod 777 "$TEMP_DIR" # discos user (Systemd install) can access it
+chmod 770 "$TEMP_DIR" # only root should access the temp dir
 
 if ! git clone --branch main --single-branch --depth 1 https://github.com/BrNi05/DiscOS.git "$TEMP_DIR" &>/dev/null; then
    echo "Failed to clone DiscOS repository."
@@ -103,7 +103,7 @@ cd "$TEMP_DIR" || (echo "Failed to enter temp directory." && exit 1)
 setup_dotenv() {
    local OPERATOR="$1"
    
-   echo -e "\nSetting up .env file..."
+   echo -e "\n\nSetting up .env file..."
 
    read -rp "If not already, set up your bot. Refer to the docs: https://github.com/BrNi05/DiscOS/wiki/03.-Creating-your-bot. Press any key to continue..."
 
@@ -132,9 +132,9 @@ setup_dotenv() {
 
    if [ "$OPERATOR" = "write" ]; then
       # Copy .env from CWD to discos home
-      cp "$DOTENV" "$DISCOS_HOME/.env"
-      chown discos:discos "$DISCOS_HOME/.env"
-      chmod 660 "$DISCOS_HOME/.env"
+      cp "$DOTENV" "$DISCOS_DIR/.env"
+      chown root:root "$DISCOS_DIR/.env"
+      chmod 660 "$DISCOS_DIR/.env"
    elif [ "$OPERATOR" = "disp" ]; then
       echo -e "\nGenerated .env content:\n"
       cat "$DOTENV"
@@ -157,7 +157,7 @@ setup_dotenv() {
 setup_db() {
    local OPERATOR="$1"
 
-   echo -e "\nCreating the initial database..."
+   echo -e "\n\nCreating the initial database..."
 
    echo -e "You will be added as a DiscOS admin.\n"
 
@@ -177,9 +177,9 @@ setup_db() {
 
    if [ "$OPERATOR" = "write" ]; then
       # Copy db.json from CWD to discos home
-      cp "$DB" "$DISCOS_HOME/db.json"
-      chown discos:discos "$DISCOS_HOME/db.json"
-      chmod 660 "$DISCOS_HOME/db.json"
+      cp "$DB" "$DISCOS_DIR/db.json"
+      chown root:root "$DISCOS_DIR/db.json"
+      chmod 660 "$DISCOS_DIR/db.json"
    elif [ "$OPERATOR" = "disp" ]; then
       echo -e "\nManually create the db.json file where needed."
       echo -e "Generated db.json content:\n"
@@ -210,50 +210,6 @@ setup_db() {
 }
 
 
-############### Node.js LTS updater ###############
-setup_node_updater() {
-   echo -e "\nAn updater script will be installed and a Systemd service will be created to keep Node.js up to date."
-   echo "NOTE: old Node.js versions will NOTE be removed automatically."
-
-   SCRIPT_PATH='/usr/local/bin/update-node.sh'
-   printf '%s\n' '#!/bin/bash' \
-   'export NVM_DIR="$HOME/.nvm"' \
-   '[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"' \
-   '' \
-   'nvm install --lts' > "$SCRIPT_PATH"
-
-   chown discos:discos "$SCRIPT_PATH"
-   chmod 770 "$SCRIPT_PATH"
-
-   printf '%s\n' \
-   '[Unit]' \
-   'Description=Update Node.js LTS for discos user' \
-   '' \
-   '[Service]' \
-   'Type=oneshot' \
-   'User=discos' \
-   "ExecStart=$SCRIPT_PATH" \
-   > /etc/systemd/system/discos-node-updater.service
-
-   printf '%s\n' \
-   '[Unit]' \
-   'Description=Run Node.js LTS update daily' \
-   '' \
-   '[Timer]' \
-   'OnCalendar=daily' \
-   'Persistent=true' \
-   '' \
-   '[Install]' \
-   'WantedBy=timers.target' \
-   > /etc/systemd/system/discos-node-updater.timer
-
-   systemctl daemon-reload
-   systemctl enable --now discos-node-updater.timer
-
-   echo -e "Node.js updater script and service installed."
-}
-
-
 ############### Compose setup ###############
 setup_compose() {
    echo -e "\nSetting up compose file...\n"
@@ -278,39 +234,31 @@ setup_compose() {
 install_systemd() {
    echo -e "\nStarting Systemd release installation..."
 
-   if ! id -u discos &>/dev/null; then
-      useradd --system -m -s "$(command -v nologin)" discos
-      echo "Created system user: discos. DiscoS will run as root but use this user for storage and Node.js installation."
-   fi
-
-   DISCOS_HOME=$(getent passwd discos | cut -d: -f6)
-
-   DISCOS_DIR="$DISCOS_HOME/DiscOS"
+   DISCOS_DIR="/opt/DiscOS"
+   echo "DiscOS will be installed to: $DISCOS_DIR"
+   mkdir -p "$DISCOS_DIR"
 
    if [[ "$1" != "update" ]]; then
       echo -e "\nSetting up Node.js..."
       read -rp "Do you have a global / user-scoped Node.js install (y/n)? " NODE_ANSWER
       if [[ "$NODE_ANSWER" = "y" || "$NODE_ANSWER" = "Y" ]]; then
-         if ! sudo -u discos bash -euo pipefail -c '
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-            command -v node
-         ' >/dev/null 2>&1; then
+         export NVM_DIR="$HOME/.nvm"
+         [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+
+         if ! command -v node >/dev/null 2>&1; then
             echo "ERROR: Node.js not found."
             exit 1
          fi
       else
          echo -e "\nInstalling Node.js via nvm..."
-         sudo -u discos bash -euo pipefail -c '
+
          export NVM_DIR="$HOME/.nvm"
          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
          [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
          nvm install --lts
          nvm use --lts
-         '
 
-         echo -e "Node.js installed."
-         setup_node_updater
+         echo -e "Node.js installed. Version: $(node -v). Make sure to update it regularly for security and performance improvements!"
       fi
 
       # .env setup
@@ -320,48 +268,43 @@ install_systemd() {
       setup_db "write"
 
       # Set up ownership and permissions
-      chown -R root:discos "$DISCOS_DIR"
+      chown -R root:root "$DISCOS_DIR"
       chmod -R 770 "$DISCOS_DIR"
+
+      read -rp "Press any key to continue with DiscOS installation..."
    else
       # Stop the service for before the update process
-      systemctl stop discos.service || echo "DiscOS service could not be stopped."
+      (systemctl stop discos.service && echo "DiscOS service stopped.") || echo "DiscOS service could not be stopped."
    fi
 
    # Compile DiscOS
    echo -e "\nCompiling DiscOS..."
-   DISCOS_DIR="$DISCOS_HOME"
-
-   sudo -u discos bash -euo pipefail -c "
-   TEMP_DIR=\"$TEMP_DIR\"
-   DISCOS_DIR=\"$DISCOS_DIR\"
 
    # Source nvm
-   export NVM_DIR=\"\$HOME/.nvm\"
-   [ -s \"\$NVM_DIR/nvm.sh\" ] && source \"\$NVM_DIR/nvm.sh\"
+   export NVM_DIR="$HOME/.nvm"
+   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
    # Build in the temp dir
-   cd \"\$TEMP_DIR\" || { echo 'Failed to enter temp download directory.'; exit 1; }
-   echo \"CWD: \$TEMP_DIR\"
+   cd "$TEMP_DIR" || { echo 'Failed to enter temp download directory.'; exit 1; }
+   echo "CWD: $TEMP_DIR"
    echo 'Installing dependencies...'
    npm ci --omit=optional --silent
    npm run build
 
    # Copy dist and install only prod deps
-   mkdir -p \"\$DISCOS_DIR\"
-   rm -rf \"\$DISCOS_DIR/dist\"
-   cp -r \"\$TEMP_DIR/dist\" \"\$DISCOS_DIR\"
-   cp \"\$TEMP_DIR/package.json\" \"\$DISCOS_DIR\"
-   cp \"\$TEMP_DIR/package-lock.json\" \"\$DISCOS_DIR\"
-   chmod -R 770 \"\$DISCOS_DIR\"
+   mkdir -p "$DISCOS_DIR"
+   rm -rf "$DISCOS_DIR/dist"
+   cp -r "$TEMP_DIR/dist" "$DISCOS_DIR"
+   cp "$TEMP_DIR/package.json" "$DISCOS_DIR"
+   cp "$TEMP_DIR/package-lock.json" "$DISCOS_DIR"
 
-   cd \"\$DISCOS_DIR\" || { echo 'Failed to enter DiscOS directory.'; exit 1; }
+   cd "$DISCOS_DIR" || { echo 'Failed to enter DiscOS directory.'; exit 1; }
    npm ci --silent --omit=dev --omit=optional
 
    # Remove package.json and package-lock.json
    rm -f package*.json
-   "
 
-   echo -e "\nDiscOS compiled successfully."
+   echo -e "DiscOS compiled successfully."
 
    if [[ "$1" != "update" ]]; then
       # Systemd service and timer setup
