@@ -26,9 +26,6 @@ const hostname = os.hostname();
 // Map of Discord user ID to User instances
 const users = new Map<string, User>();
 
-// Internal root PTY session
-const internalPty = new User(INTERNAL_UID, INTERNAL_UNAME, ROOT_UNAME);
-
 // Return pwd for user's PTY
 async function getUserPwd(dcUid: string): Promise<string> {
   const user = users.get(dcUid)!;
@@ -81,14 +78,14 @@ export async function execCommand(dcUid: string, discosUser: string, localUser: 
 // Spawn PTYs for all allowed users from Config
 export async function initTerminalsFromConfig(queues: CommandQueues): Promise<void> {
   if (Config.standalone) {
-    if (!users.has(internalPty.dcUid)) users.set(internalPty.dcUid, internalPty); // internal PTY
+    if (!users.has(INTERNAL_UID)) users.set(INTERNAL_UID, new User(INTERNAL_UID, INTERNAL_UNAME, ROOT_UNAME)); // internal PTY
     if (!users.has(ROOT_UID)) users.set(ROOT_UID, new User(ROOT_UID, ROOT_UNAME, ROOT_UNAME)); // root/admin PTY
 
     for (const dcUid of Config.allowedUsers) {
       try {
         if (!users.has(dcUid)) {
-          users.set(dcUid, new User(dcUid, '', await localUser(dcUid)));
-          logger.info(COMMON.terminalSpawnedMessage(dcUid, await localUser(dcUid)));
+          users.set(dcUid, new User(dcUid, '', localUser(dcUid)));
+          logger.info(COMMON.terminalSpawnedMessage(dcUid, localUser(dcUid)));
         }
       } catch (err) {
         logger.error(COMMON.terminalSpawnFailedMessage(dcUid), err);
