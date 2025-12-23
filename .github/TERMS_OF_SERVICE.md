@@ -54,3 +54,4 @@ These terms may be updated at any time. Continued use of the bot after updates c
 ## 9. Version history
 
 - 2025.08.30: first edition
+- 2025.12.22: second edition (privacy policy updated)

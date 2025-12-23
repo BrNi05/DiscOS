@@ -1,18 +1,18 @@
 import type { ChatInputCommandInteraction, CacheType } from 'discord.js';
 
 // Helpers
-import * as queueUtils from '../tools/queue-utils.js';
-import { post } from '../tools/backend.js';
+import * as queueUtils from '../security/queue-utils.js';
+import { post } from '../exec/backend.js';
 
 // Config file
-import { Config } from '../config.js';
+import { Config } from '../config/config.js';
 
 // Consts
 import * as COMMON from '../common.js';
 
 // Interfaces
 import type { ICommandQueueItem } from '../shared/interfaces.js';
-import type { CommandQueues } from '../types/queues.js';
+import type { CommandQueues } from '../interfaces/queues.js';
 
 // Load binary overrides
 // Include a trailing space to avoid some accidental matches
@@ -31,7 +31,7 @@ export async function execCommand(
 
   // Default
   if (prefixChoice === 0) {
-    replyPrefix = COMMON.CMD_EXEC_AS_MSG(userCmd, username);
+    replyPrefix = COMMON.CMD_EXEC_AS_MSG(userCmd, username); // only used for interactive commands error handling
   }
   // Watch
   else if (prefixChoice === 1) {
@@ -58,11 +58,11 @@ export async function execCommand(
       });
       return reply;
     } else {
-      const res = await post(payload, false);
+      const res = await post(payload, false, prefixChoice === 1 ? true : silent); // watch is silent, otherwise check if silent should be used
 
       const resString: string = (res.data as Buffer).toString('utf-8').trim();
       const replyContent = resString === COMMON.BACKEND_EXEC_ERR ? COMMON.BACKEND_EXEC_ERR_OVERRIDE : resString;
-      const replyContentFormatted = replyPrefix + replyContent;
+      const replyContentFormatted = replyContent; // previously was: replyPrefix + replyContent
 
       // Do not reply to internal commands
       if (!silent) {

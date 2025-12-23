@@ -2,10 +2,10 @@ import type { ChatInputCommandInteraction, CacheType, Client } from 'discord.js'
 import os from 'node:os';
 
 // Config file
-import { Config } from '../config.js';
+import { Config } from '../config/config.js';
 
 // Repo scoped types
-import type { CommandQueues } from '../types/queues.js';
+import type { CommandQueues } from '../interfaces/queues.js';
 
 // Dynamic date formatter
 function formatDate(seconds: number): string {
@@ -44,6 +44,7 @@ export async function debug(
     `Bot User:                 ${client.user!.tag}\n` +
     `Command Queue Size (D):   ${queues.duplicateQueue.length}\n` +
     `Command Queue Size (V):   ${queues.validationQueue.length}\n` +
+    `User Rate Limit:          ${Config.userRateLimit}\n` +
     `Command Queue Max:        ${Config.cmdQueueMaxSize}\n` +
     `Backend URL:              ${Config.backend}\n` +
     `Database Path:            ${Config.databasePath}\n` +

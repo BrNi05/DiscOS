@@ -69,9 +69,9 @@ echo -e "\nInstalling dependencies..."
 # Install deps for this script
 need sed
 need awk
-need grep
+need grep # DiscOS deps as well
 need git
-need curl
+need curl # DiscOS deps as well
 need tee
 need tail
 
@@ -81,7 +81,6 @@ need base64
 need dos2unix
 need realpath
 need head
-need grep # installed as script deps as well
 
 echo -e "All dependencies installed."
 
@@ -165,6 +164,10 @@ setup_db() {
    read -rp "Enter your Discord UID: " DISCORD_UID
    read -rp "Enter the local username that you want to use as the given Discord user: " LOCAL_USERNAME
    read -rp "Enter a single channel ID which DiscOS has already joined: " CHANNEL_ID
+
+   # Disable standalone mode by default for Docker releases
+   echo -e "\nIf you plan to run DiscOS in a Docker container in EB mode, modify the DB, so that the container is started in standalone mode!"
+   echo "Otherwise, if the prevoiusly set local user does not exist, DiscOS will fail to start."
 
    DB="$TEMP_DIR/setup/db.json"
 
@@ -255,7 +258,7 @@ setup_node_updater() {
 setup_compose() {
    echo -e "\nSetting up compose file...\n"
 
-   echo "The latest DiscOS image will be used. Feel free to pin to a specific version if you want manual updates."
+   echo "The latest DiscOS image will be used. In case of an update, be sure to manually pull the new image."
 
    read -rp "Container name (default DiscOS): " CONTAINER_NAME
    sed -i "s/SERVICE_NAME/${CONTAINER_NAME:-DiscOS}/g" "$COMPOSE_FILE"
@@ -271,41 +274,13 @@ setup_compose() {
 }
 
 
-############### cmdex setup ###############
-
-setup_cmdex() {
-   echo -e "\nSetting up command executor..."
-
-   echo -e "\nYou can specify one user that is allowed to use command executor. This is the user as which your external backend (if used) or parent process (if npm install) will run."
-   read -rp "Enter the local username (default: root): " CMD_USER
-   CMD_USER=${CMD_USER:-root}
-   echo
-
-   cp "$TEMP_DIR/src/.sh/cmd-executor.sh" "/usr/local/bin/cmdex.sh"
-   chown discos:"$CMD_USER" "/usr/local/bin/cmdex.sh" || chown discos:discos "/usr/local/bin/cmdex.sh" || chown root:root "/usr/local/bin/cmdex.sh"
-   chmod 770 "/usr/local/bin/cmdex.sh"
-   ln -s "/usr/local/bin/cmdex.sh" "/usr/local/bin/cmdex" >/dev/null 2>&1 || echo "Symlink for cmdex already exists."
-
-   # Sudoers change
-   echo "discos ALL=(ALL) NOPASSWD: /usr/local/bin/cmdex.sh, /usr/local/bin/cmdex" | tee /etc/sudoers.d/cmdex >/dev/null
-   chmod 440 /etc/sudoers.d/cmdex
-
-   if [[ "$CMD_USER" != "root" && $(id -u "$CMD_USER" >/dev/null 2>&1; echo $?) -eq 0 ]]; then
-      echo "$CMD_USER ALL=(ALL) NOPASSWD: /usr/local/bin/cmdex.sh, /usr/local/bin/cmdex" | tee /etc/sudoers.d/cmdex-user-"$CMD_USER" >/dev/null
-      chmod 440 /etc/sudoers.d/cmdex-user-"$CMD_USER"
-   fi
-
-   echo -e "Command executor setup completed."
-}
-
-
 ############### Systemd release ###############
 install_systemd() {
    echo -e "\nStarting Systemd release installation..."
 
    if ! id -u discos &>/dev/null; then
       useradd --system -m -s "$(command -v nologin)" discos
-      echo "Created system user: discos."
+      echo "Created system user: discos. DiscoS will run as root but use this user for storage and Node.js installation."
    fi
 
    DISCOS_HOME=$(getent passwd discos | cut -d: -f6)
@@ -344,8 +319,9 @@ install_systemd() {
       # DB setup
       setup_db "write"
 
-      # Command executor setup
-      setup_cmdex
+      # Set up ownership and permissions
+      chown -R root:discos "$DISCOS_DIR"
+      chmod -R 770 "$DISCOS_DIR"
    else
       # Stop the service for before the update process
       systemctl stop discos.service || echo "DiscOS service could not be stopped."
@@ -367,7 +343,7 @@ install_systemd() {
    cd \"\$TEMP_DIR\" || { echo 'Failed to enter temp download directory.'; exit 1; }
    echo \"CWD: \$TEMP_DIR\"
    echo 'Installing dependencies...'
-   npm ci --silent --ignore-scripts
+   npm ci --omit=optional --silent
    npm run build
 
    # Copy dist and install only prod deps
@@ -433,7 +409,7 @@ install_npm() {
    if [[ "$IN_DOCKER" = "y" || "$IN_DOCKER" = "Y" ]]; then
       COMPOSE_FILE="$TEMP_DIR/setup/docker-compose.yaml"
       setup_compose
-      echo -e "Compose file will be displayed below. Now rewrite it according to your needs but make sure mounts and env var settings are kept.\n"
+      echo -e "Compose file will be displayed below. Now, rewrite it according to your needs but make sure mounts and env var settings are kept.\n"
       cat "$COMPOSE_FILE"
       echo
    else
@@ -449,9 +425,6 @@ install_npm() {
 
    read -rp "Press any key to continue with database generation. It will only be displayed, copy it where needed."
    setup_db "disp"
-
-   # Command executor setup
-   setup_cmdex
 
    echo -e "\nnpm release installation process completed."
 }
@@ -495,9 +468,6 @@ install_docker() {
 
    read -rp "Press any key to continue with database generation. It will be located in the compose file dir."
    setup_db "$COMPOSE_PATH"
-
-   # Command executor setup
-   setup_cmdex
 
    echo -e "\nDocker release installation process completed."
 }

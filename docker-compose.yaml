@@ -2,9 +2,13 @@ services:
   discos:
     container_name: DiscOS
     image: discos:latest
+    hostname: discos-server
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      # Users in db.json does not exist in the container, use root for testing
+      - PTY_TEST_MODE=1
     volumes:
       - ./db.json:/discos/db.json
     logging:

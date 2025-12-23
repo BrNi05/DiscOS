@@ -1,4 +1,4 @@
-import * as queueUtils from '../tools/queue-utils.js';
+import * as queueUtils from '../security/queue-utils.js';
 
 import net from 'node:net';
 import fs from 'node:fs';
@@ -6,10 +6,11 @@ import fs from 'node:fs';
 import * as COMMON from '../common.js';
 import { SOCKET_PATH } from '../shared/consts.js';
 import type { ICommandQueueItem } from '../shared/interfaces.js';
-import type { CommandQueues } from '../types/queues.js';
+import type { CommandQueues } from '../interfaces/queues.js';
+import logger from '../logging/logger.js';
 
 // Config file
-import { Config } from '../config.js';
+import { Config } from '../config/config.js';
 
 export function startIPCServer(cmdQueues: CommandQueues): net.Server {
   // Ensure the socket does not already exist
@@ -51,10 +52,10 @@ export function startIPCServer(cmdQueues: CommandQueues): net.Server {
 
   server.listen(SOCKET_PATH, () => {
     // When running in a Docker container: only root has access to the socket
-    // When running as a Systemd service: only the discos user has access to the socket
+    // When running as a Systemd service: only the discos user (and of course root) has access to the socket
     // Be sure to execute the external backend (if needed) with proper permissions (proper user)
     fs.chmodSync(SOCKET_PATH, 0o600);
-    console.log(COMMON.LISTENING + SOCKET_PATH);
+    logger.info(COMMON.LISTENING + SOCKET_PATH);
   });
 
   return server;

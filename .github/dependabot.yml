@@ -15,7 +15,10 @@ updates:
           - "^discord.js"
           - "^dotenv"
           - "^file-type"
+          - "^node-pty"
           - "^shell-escape"
+          - "^strip-ansi"
+          - "^winston"
       dev-deps:
         patterns:
           - "^eslint"

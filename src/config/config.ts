@@ -15,6 +15,7 @@ export const Config: {
   standalone: boolean;
   safemode: boolean;
   lockdown: boolean;
+  userRateLimit: number;
 } = {
   cmdQueueMaxSize: 0,
   backend: '',
@@ -30,4 +31,5 @@ export const Config: {
   standalone: false,
   safemode: false,
   lockdown: false,
+  userRateLimit: 0,
 };

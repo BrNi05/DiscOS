@@ -2,16 +2,18 @@ import fs from 'node:fs';
 
 import * as COMMON from '../common.js';
 import type { DB } from '../shared/types.js';
+import { Config } from './config.js';
+import logger from '../logging/logger.js';
 
-import { Config } from '../config.js';
+import { updateExternalBackendDatabase } from '../exec/backend.js';
 
-import { updateExternalBackendDatabase } from './backend.js';
-
-import type { CommandQueues } from '../types/queues.js';
+import type { CommandQueues } from '../interfaces/queues.js';
 
 // UDI and CID validation
 const isValidId = (id: string) => /^\d{17,}$/.test(id);
 
+// Validate database structure and load data into config
+// Also called after admin commands that modify the DB
 export function validateDb(queues: CommandQueues): boolean {
   // Read DB
   let db: DB;
@@ -19,13 +21,13 @@ export function validateDb(queues: CommandQueues): boolean {
     const rawData = fs.readFileSync(process.env.DATABASE_PATH!, 'utf-8');
     db = JSON.parse(rawData) as DB;
   } catch {
-    console.error(COMMON.DB_ERR);
+    logger.error(COMMON.DB_ERR);
     return false;
   }
 
   // Validate db structure
   if (typeof db !== 'object' || db === null) {
-    console.error(COMMON.DB_ERR);
+    logger.error(COMMON.DB_ERR);
     return false;
   }
 
@@ -34,45 +36,45 @@ export function validateDb(queues: CommandQueues): boolean {
 
   // Validate users
   if (typeof users !== 'object' || users === null) {
-    console.error(COMMON.DB_USER_ERR);
+    logger.error(COMMON.DB_USER_ERR);
     return false;
   }
 
   const userIds = Object.keys(users);
   if (userIds.length === 0) {
-    console.warn(COMMON.DB_USERS_EMPTY);
+    logger.warn(COMMON.DB_USERS_EMPTY);
   }
 
   if (userIds.some((id) => !isValidId(id))) {
-    console.error(COMMON.DB_USERS_INVALID);
+    logger.error(COMMON.DB_USERS_INVALID);
     return false;
   }
 
   // Validate adminUsers
   if (!Array.isArray(adminUsers)) {
-    console.error(COMMON.DB_ADMIN_ERR);
+    logger.error(COMMON.DB_ADMIN_ERR);
     return false;
   }
   if (adminUsers.length === 0) {
-    console.error(COMMON.DB_NO_ADMIN);
+    logger.error(COMMON.DB_NO_ADMIN);
     return false;
   }
   if (adminUsers.some((id) => !isValidId(id))) {
-    console.error(COMMON.DB_ADMIN_INVALID);
+    logger.error(COMMON.DB_ADMIN_INVALID);
     return false;
   }
 
   // Validate allowedChannels
   if (allowedChannels !== undefined) {
     if (!Array.isArray(allowedChannels)) {
-      console.error(COMMON.DB_ALLOWED_CHANNELS_ARRAY);
+      logger.error(COMMON.DB_ALLOWED_CHANNELS_ARRAY);
       return false;
     }
     if (allowedChannels.length === 0) {
-      console.warn(COMMON.DB_ALLOWED_CH_EMPTY);
+      logger.warn(COMMON.DB_ALLOWED_CH_EMPTY);
     }
     if (allowedChannels.some((id) => !isValidId(id))) {
-      console.error(COMMON.DB_ALLOWED_CH_INVALID);
+      logger.error(COMMON.DB_ALLOWED_CH_INVALID);
       return false;
     }
   }
@@ -81,7 +83,7 @@ export function validateDb(queues: CommandQueues): boolean {
   const booleanFields = ['standalone', 'safemode', 'lockdown'] as const;
   for (const key of booleanFields) {
     if (typeof db[key] !== 'boolean') {
-      console.error(`${COMMON.DB_BOOLEAN_ERR} (${key})`);
+      logger.error(`${COMMON.DB_BOOLEAN_ERR} (${key})`);
       return false;
     }
   }

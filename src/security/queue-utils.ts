@@ -1,18 +1,21 @@
 import type { ChatInputCommandInteraction, CacheType } from 'discord.js';
 import * as COMMON from '../common.js';
 import type { ICommandQueueItem } from '../shared/interfaces.js';
-import type { CommandQueues } from '../types/queues.js';
+import type { CommandQueues } from '../interfaces/queues.js';
 
+// Add ICommandQueueItem to all queues
 export function addToAll(queues: CommandQueues, req: ICommandQueueItem): void {
   queues.validationQueue.push(req);
   queues.duplicateQueue.push(req);
 }
 
+// Remove ICommandQueueItem from all queues
 export function removeFromAll(queues: CommandQueues, req: ICommandQueueItem): void {
   tryRemoveInQueue(queues.validationQueue, req);
   tryRemoveInQueue(queues.duplicateQueue, req);
 }
 
+// Try to remove ICommandQueueItem from a specific queue
 export function tryRemoveInQueue(queue: ICommandQueueItem[], req: ICommandQueueItem): void {
   const index = queue.findIndex((item) => item.user === req.user && item.cmd === req.cmd);
   if (index !== -1) {
@@ -20,10 +23,12 @@ export function tryRemoveInQueue(queue: ICommandQueueItem[], req: ICommandQueueI
   }
 }
 
+// Check if ICommandQueueItem is in a specific queue
 export function isInQueue(queue: ICommandQueueItem[], req: ICommandQueueItem): boolean {
   return queue.some((item) => item.user === req.user && item.cmd === req.cmd);
 }
 
+// Handle duplicate command detection and reply
 export async function handleDuplicate(
   interaction: ChatInputCommandInteraction<CacheType>,
   username: string,
@@ -42,4 +47,9 @@ export async function handleDuplicate(
     return true;
   }
   return false;
+}
+
+// Count the number of commands in the queue for a specific user
+export function countUserCommandsInQueue(queue: ICommandQueueItem[], userId: string): number {
+  return queue.reduce((count, item) => (item.user === userId ? count + 1 : count), 0);
 }
