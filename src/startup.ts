@@ -41,7 +41,7 @@ export async function startDiscOS(): Promise<void> {
   }
 
   // Load and validate environment variables
-  if (!validateDotenv()) {
+  if (!(await validateDotenv())) {
     process.exit(1);
   }
 
@@ -276,7 +276,7 @@ export async function startDiscOS(): Promise<void> {
 
 // Auto-start DiscOS if it's executed directly with Node
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  registerSlashCommands();
+  await registerSlashCommands();
   startDiscOS().catch(() => {
     logger.error(COMMON.DISCOS_STARTUP_ERR);
     process.exit(1);

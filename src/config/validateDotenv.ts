@@ -2,10 +2,11 @@ import * as COMMON from '../common.js';
 import dotenv from 'dotenv';
 import { Config } from './config.js';
 import logger from '../logging/logger.js';
+import { refreshDbCache } from '../exec/username.js';
 
 dotenv.config({ quiet: true });
 
-export function validateDotenv(): boolean {
+export async function validateDotenv(): Promise<boolean> {
   const requiredEnvVars = [
     'BOT_TOKEN',
     'APP_ID',
@@ -67,6 +68,7 @@ export function validateDotenv(): boolean {
     return false;
   }
   Config.databasePath = process.env.DATABASE_PATH!;
+  await refreshDbCache(); // load DB cache for the first time in DiscOS lifecycle
 
   // FILE_MAX_SIZE is a positive integer and not more then 1000MB
   const fileMaxSize = Number.parseInt(process.env.FILE_MAX_SIZE!, 10);
