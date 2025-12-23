@@ -3,6 +3,7 @@ import logger from '../logging/logger.js';
 import * as COMMON from '../common.js';
 
 import pty, { type IPty } from 'node-pty';
+import { ROOT_UNAME } from '../shared/consts.js';
 
 export class User {
   // Discord user ID (unique)
@@ -37,10 +38,14 @@ export class User {
 
     // For testing purposes, allow overriding the local user to root
     //! Should only be used in test and dev environments
-    if (IS_TEST_MODE) {
-      this.localUser = 'root';
-      cwd = '/';
-      home = '/';
+    if (IS_TEST_MODE) this.localUser = ROOT_UNAME;
+
+    // Handle root home dir - /root
+    // For root and internal PTY
+    // Also triggered by IS_TEST_MODE, as localUser is overridden to root
+    if (this.localUser === ROOT_UNAME) {
+      cwd = `/${ROOT_UNAME}`;
+      home = `/${ROOT_UNAME}`;
     }
 
     const newPtyProcess: IPty = pty.spawn('sudo', ['-u', this.localUser, '-i', '/bin/bash'], {
