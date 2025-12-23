@@ -10,9 +10,9 @@ import * as COMMON from './common.js';
 // Path helper
 import { fileURLToPath } from 'node:url';
 
-export function registerSlashCommands(): void {
+export async function registerSlashCommands(): Promise<void> {
   // Load and validate environment variables
-  if (!validateDotenv()) { process.exit(1); }
+  if (!(await validateDotenv())) { process.exit(1); }
 
   // Create the /dcos subcommands
   const command = new SlashCommandBuilder()
@@ -335,5 +335,5 @@ export function registerSlashCommands(): void {
 
 // Run slash command building if it is run directly with Node
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  registerSlashCommands();
+  await registerSlashCommands();
 }

@@ -41,7 +41,7 @@ export async function startDiscOS(): Promise<void> {
   }
 
   // Load and validate environment variables
-  if (!validateDotenv()) {
+  if (!(await validateDotenv())) {
     process.exit(1);
   }
 
@@ -111,22 +111,11 @@ export async function startDiscOS(): Promise<void> {
       return;
     }
 
-    // User-scoped rate limiting
-    if (queueUtils.countUserCommandsInQueue(queues.duplicateQueue, interaction.user.id) >= Config.userRateLimit) {
-      await interaction.reply({ content: COMMON.USER_RATE_LIMIT, flags: 64 });
-      return;
-    }
-
-    // Global rate-limiting
-    if (queues.duplicateQueue.length >= Number(Config.cmdQueueMaxSize)) {
-      await interaction.reply({ content: COMMON.DISCOS_OVERLOADED, flags: 64 });
-      return;
-    }
-
     // Process the command and context
     const subcommand = interaction.options.getSubcommand();
     const userId = interaction.user.id;
     const username = discordUsername(interaction);
+
     // Enforce lockdown mode
     const isAdminUser: boolean = Config.adminUsers.includes(userId);
     if (Config.lockdown && !isAdminUser) {
@@ -141,6 +130,18 @@ export async function startDiscOS(): Promise<void> {
         return;
       }
       await handleAdmin(interaction, subcommand, username, queues, client);
+      return;
+    }
+
+    // User-scoped rate limiting
+    if (queueUtils.countUserCommandsInQueue(queues.duplicateQueue, interaction.user.id) >= Config.userRateLimit) {
+      await interaction.reply({ content: COMMON.USER_RATE_LIMIT, flags: 64 });
+      return;
+    }
+
+    // Global rate-limiting
+    if (queues.duplicateQueue.length >= Number(Config.cmdQueueMaxSize)) {
+      await interaction.reply({ content: COMMON.DISCOS_OVERLOADED, flags: 64 });
       return;
     }
 
@@ -275,7 +276,7 @@ export async function startDiscOS(): Promise<void> {
 
 // Auto-start DiscOS if it's executed directly with Node
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  registerSlashCommands();
+  await registerSlashCommands();
   startDiscOS().catch(() => {
     logger.error(COMMON.DISCOS_STARTUP_ERR);
     process.exit(1);

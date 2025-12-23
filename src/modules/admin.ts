@@ -16,7 +16,7 @@ import shellEscape from 'shell-escape';
 import * as COMMON from '../common.js';
 import type { ICommandQueueItem } from '../shared/interfaces.js';
 import type { CommandQueues } from '../interfaces/queues.js';
-import { ROOT_UID, INTERNAL_UID, INTERNAL_UNAME } from '../shared/consts.js';
+import { ROOT_UID, INTERNAL_UID, INTERNAL_UNAME, ROOT_UNAME } from '../shared/consts.js';
 
 // Config file
 import { Config } from '../config/config.js';
@@ -514,7 +514,7 @@ export async function handleAdmin(
     let command = interaction.options.getString(COMMON.CMD, false);
     if (!command || command.trim().length === 0) command = ''; // default command, execCommand() will handle it
 
-    const payload: ICommandQueueItem = { user: ROOT_UID, username: discordUsername(interaction), cmd: command };
+    const payload: ICommandQueueItem = { user: ROOT_UID, username: ROOT_UNAME, cmd: command };
 
     // Backend will validate it
     queueUtils.addToAll(queues, payload);
