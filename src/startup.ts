@@ -111,22 +111,11 @@ export async function startDiscOS(): Promise<void> {
       return;
     }
 
-    // User-scoped rate limiting
-    if (queueUtils.countUserCommandsInQueue(queues.duplicateQueue, interaction.user.id) >= Config.userRateLimit) {
-      await interaction.reply({ content: COMMON.USER_RATE_LIMIT, flags: 64 });
-      return;
-    }
-
-    // Global rate-limiting
-    if (queues.duplicateQueue.length >= Number(Config.cmdQueueMaxSize)) {
-      await interaction.reply({ content: COMMON.DISCOS_OVERLOADED, flags: 64 });
-      return;
-    }
-
     // Process the command and context
     const subcommand = interaction.options.getSubcommand();
     const userId = interaction.user.id;
     const username = discordUsername(interaction);
+
     // Enforce lockdown mode
     const isAdminUser: boolean = Config.adminUsers.includes(userId);
     if (Config.lockdown && !isAdminUser) {
@@ -141,6 +130,18 @@ export async function startDiscOS(): Promise<void> {
         return;
       }
       await handleAdmin(interaction, subcommand, username, queues, client);
+      return;
+    }
+
+    // User-scoped rate limiting
+    if (queueUtils.countUserCommandsInQueue(queues.duplicateQueue, interaction.user.id) >= Config.userRateLimit) {
+      await interaction.reply({ content: COMMON.USER_RATE_LIMIT, flags: 64 });
+      return;
+    }
+
+    // Global rate-limiting
+    if (queues.duplicateQueue.length >= Number(Config.cmdQueueMaxSize)) {
+      await interaction.reply({ content: COMMON.DISCOS_OVERLOADED, flags: 64 });
       return;
     }
 
