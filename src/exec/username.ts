@@ -40,9 +40,5 @@ export async function refreshDbCache(): Promise<void> {
 export function localUser(user: string): string {
   // Handle root user (for admos root <command>)
   if (user === ROOT_UID) return ROOT_UNAME;
-
-  // Cannot be null, since only an allowedUser can send commands
-  const serverUser: string = dbUserCache[user]; // always defined
-
-  return shellEscape([serverUser]);
+  return shellEscape([dbUserCache[user]]); // always defined
 }

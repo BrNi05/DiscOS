@@ -54,7 +54,7 @@ async function fileWrite(url: string, _path: string, payload: ICommandQueueItem)
   const escapedPath: string = shellEscape([_path]);
 
   // Get the server user based on the Discord UID
-  const serverUser: string = await localUser(payload.user);
+  const serverUser: string = localUser(payload.user);
 
   // The output buffer for the command executions
   let stdout: string;
@@ -87,7 +87,7 @@ export async function post(payload: ICommandQueueItem, b64decode: boolean, silen
   let res: AxiosResponse<any, any> = internalAxiosResponse('', 500); // dummy init
 
   if (Config.standalone) {
-    const output = await execCommand(payload.user, payload.username, await localUser(payload.user), payload.cmd, silent);
+    const output = await execCommand(payload.user, payload.username, localUser(payload.user), payload.cmd, silent);
     res = internalAxiosResponse(b64decode ? Buffer.from(output.toString(), 'base64') : output, 200);
   } else {
     try {

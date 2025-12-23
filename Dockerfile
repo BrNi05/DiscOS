@@ -17,7 +17,7 @@ RUN npm ci --omit=optional --silent
 
 COPY . .
 
-RUN npm run build
+RUN npx tsc -b
 
 ##### Stage 2: Production #####
 
