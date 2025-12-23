@@ -408,7 +408,7 @@ export const EXTERNAL_OK = 'External backend is online and responded to the heal
 export const EXTERNAL_NORESPONSE =
   'WARNING! The external backend did not respond to the health check ping. It may be offline or unreachable.';
 
-export const NETWORK_ERR = 'Network error while trying to connect to the backend.';
+export const NETWORK_ERR = 'Network error while trying to communicate with the external backend. DiscOS will now restart...';
 
 // ############################################################################################################################################# //
 // External backend specific
@@ -425,7 +425,7 @@ export function terminalSpawnedMessage(dcUid: string, localUserName: string): st
 }
 
 export function terminalSpawnFailedMessage(dcUid: string): string {
-  return `[TerminalManager] Failed to spawn terminal for ${dcUid}`;
+  return `[TerminalManager] Failed to spawn terminal for ${dcUid}. DiscOS or the EB will now restart...`;
 }
 
 export function terminalDestroyedMessage(dcUid: string, respawn: boolean): string {
