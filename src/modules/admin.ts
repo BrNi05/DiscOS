@@ -8,7 +8,7 @@ import { clearHistory } from './clear.js';
 // Helpers
 import * as queueUtils from '../security/queue-utils.js';
 import { ping, post } from '../exec/backend.js';
-import { destroyTerminalForUser, syncTerminalsWithConfig, INTERNAL_UID, INTERNAL_UNAME } from '../exec/terminal-manager.js';
+import { destroyTerminalForUser, syncTerminalsWithConfig } from '../exec/terminal-manager.js';
 import logger from '../logging/logger.js';
 import shellEscape from 'shell-escape';
 
@@ -16,7 +16,7 @@ import shellEscape from 'shell-escape';
 import * as COMMON from '../common.js';
 import type { ICommandQueueItem } from '../shared/interfaces.js';
 import type { CommandQueues } from '../interfaces/queues.js';
-import { ROOT_UID } from '../shared/consts.js';
+import { ROOT_UID, INTERNAL_UID, INTERNAL_UNAME } from '../shared/consts.js';
 
 // Config file
 import { Config } from '../config/config.js';
@@ -280,32 +280,39 @@ export async function handleAdmin(
   async function mode(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
     const standalone = interaction.options.getBoolean(COMMON.STANDALONE, true);
 
+    // Switch indicator
+    // If a switch happens, then the terminals need to be respawned on the EB or this instance and destroyed on the other
+    let switchHappened = false;
+
     // Ping function
-    // No need for a standalone -> EB transition, always ping
+    // Only ping if switching to external backend mode (will raise a PTY clear flag on the EB)
     let pingRes = '';
-    if (!standalone) {
-      pingRes = await ping();
-    }
 
     // Start/stop IPC server
     if (Config.standalone && !standalone) {
       Config.ipcServer = startIPCServer(queues); // switch to backend mode
       logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), 'backend'));
+      pingRes = await ping();
+      switchHappened = true;
     } else if (!Config.standalone && standalone) {
       Config.ipcServer!.close(); // switch to standalone mode
       logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), 'standalone'));
       Config.ipcServer = null;
+      switchHappened = true;
     }
 
     // Write databse
     const db = await dbPrep(interaction);
     if (!db) return;
     db.standalone = standalone; // write to DB, then load it to Config
-    dbClose(db, queues);
+    dbClose(db, queues); // if EB is turned on, this will refresh the DB on the EB
 
     await interaction.editReply({
       content: COMMON.MODE_REPLY(standalone, pingRes),
     });
+
+    // Process switch
+    if (switchHappened) await syncTerminalsWithConfig(true, queues);
   }
 
   // /admos safemode <true?>
@@ -400,7 +407,7 @@ export async function handleAdmin(
     if (!adminAsWell) dbClose(db, queues); // do not overwrite the changes made by adminMgmt
 
     // Sync terminals
-    await syncTerminalsWithConfig();
+    await syncTerminalsWithConfig(false, queues);
   }
 
   // /admos adminmgmt <user> <add?/remove?>

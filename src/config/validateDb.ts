@@ -12,6 +12,8 @@ import type { CommandQueues } from '../interfaces/queues.js';
 // UDI and CID validation
 const isValidId = (id: string) => /^\d{17,}$/.test(id);
 
+// Validate database structure and load data into config
+// Also called after admin commands that modify the DB
 export function validateDb(queues: CommandQueues): boolean {
   // Read DB
   let db: DB;

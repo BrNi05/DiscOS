@@ -11,13 +11,13 @@ import type { DB } from '../shared/types.js';
 
 // Consts
 import * as COMMON from '../common.js';
-import { PING_RESPONSE, DB_UPDATE } from '../shared/consts.js';
+import { PING_RESPONSE, DB_UPDATE, INTERNAL_UID, INTERNAL_UNAME } from '../shared/consts.js';
 const WRITE_OP_SUCCESS = '';
 
 // Helpers
 import type { CommandQueues } from '../interfaces/queues.js';
 import * as queueUtils from '../security/queue-utils.js';
-import { execCommand, INTERNAL_UID, INTERNAL_UNAME } from '../exec/terminal-manager.js';
+import { execCommand } from './terminal-manager.js';
 import { localUser } from './username.js';
 import logger from '../logging/logger.js';
 
@@ -27,6 +27,12 @@ import shellEscape from 'shell-escape';
 // File system
 import path from 'node:path';
 import fs from 'node:fs';
+
+// Axios error handling
+export function axiosError(): void {
+  logger.error(COMMON.NETWORK_ERR);
+  process.exit(1);
+}
 
 // Axios response creation
 function internalAxiosResponse(data: any, status: number): AxiosResponse<any, any> {
@@ -78,16 +84,20 @@ async function fileWrite(url: string, _path: string, payload: ICommandQueueItem)
 
 // Post command to EB or execute locally
 export async function post(payload: ICommandQueueItem, b64decode: boolean, silent: boolean): Promise<AxiosResponse<any, any>> {
-  let res: AxiosResponse<any, any>;
+  let res: AxiosResponse<any, any> = internalAxiosResponse('', 500); // dummy init
 
   if (Config.standalone) {
     const output = await execCommand(payload.user, payload.username, await localUser(payload.user), payload.cmd, silent);
     res = internalAxiosResponse(b64decode ? Buffer.from(output.toString(), 'base64') : output, 200);
   } else {
-    res = await axios.post(Config.backend, payload, {
-      responseType: 'text',
-      validateStatus: (status) => status <= 500,
-    });
+    try {
+      res = await axios.post(Config.backend, payload, {
+        responseType: 'text',
+        validateStatus: (status) => status < 400,
+      });
+    } catch {
+      axiosError();
+    }
     if (b64decode) res.data = Buffer.from(res.data as string, 'base64'); // Convert base64 encoded response to Buffer
   }
 
@@ -96,18 +106,22 @@ export async function post(payload: ICommandQueueItem, b64decode: boolean, silen
 
 // Put file to EB or handle locally
 export async function put(req: IFileWritePayload): Promise<AxiosResponse<any, any>> {
-  let res: AxiosResponse<any, any>;
+  let res: AxiosResponse<any, any> = internalAxiosResponse('', 500); // dummy init
 
   if (Config.standalone) {
     const internalResponse = await fileWrite(req.url, req.path, req.payload);
     return internalAxiosResponse(internalResponse, internalResponse === WRITE_OP_SUCCESS ? 200 : 500);
   } else {
-    res = await axios.put(Config.backend, req, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      validateStatus: (status) => status <= 500,
-    });
+    try {
+      res = await axios.put(Config.backend, req, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        validateStatus: (status) => status < 400,
+      });
+    } catch {
+      axiosError();
+    }
   }
 
   return res;
@@ -133,12 +147,10 @@ export async function ping(): Promise<string> {
     logger.info(COMMON.EXTERNAL_OK);
     return COMMON.EXTERNAL_OK;
   } catch (err) {
-    if (err instanceof Error) {
-      logger.error(err.message);
-    } else {
-      logger.error(String(err));
-    }
-    return COMMON.EXTERNAL_NORESPONSE;
+    if (err instanceof Error) logger.error(err.message);
+    else logger.error(String(err));
+    axiosError();
+    return COMMON.EXTERNAL_NORESPONSE; // unreachable, no effect
   } finally {
     clearTimeout(timeout);
   }

@@ -58,7 +58,8 @@ export async function startDiscOS(): Promise<void> {
   if (!validateDb(queues)) process.exit(1);
 
   // Load DB content to Terminal Manager
-  await initTerminalsFromConfig();
+  // The EB should init itself on startup
+  if (Config.standalone) await initTerminalsFromConfig(queues);
 
   // Warn user if the PTY test mode is enabled
   if (process.env.PTY_TEST_MODE) logger.warn(COMMON.PTY_TEST_MODE_WARN);
