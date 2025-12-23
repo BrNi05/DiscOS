@@ -9,15 +9,21 @@ const pkg = JSON.parse(await readFile(path.join(dir, '../package.json'), 'utf-8'
 const { version } = pkg;
 
 const tags = [
-  'discos:latest',
   'brni05/discos:latest',
   `brni05/discos:${version}`
 ];
 
-console.log('Building Docker image with tags: ', tags.join(', '));
-execSync(`docker build ${tags.map(t => '-t ' + t).join(' ')} .`, { stdio: 'inherit' });
-
-for (const tag of tags.slice(1)) {
-  console.log('Pushing Docker tag:', tag);
-  execSync(`docker push ${tag}`, { stdio: 'inherit' });
+try {
+  execSync('docker buildx create --use', { stdio: 'inherit' });
+} catch {
+  // buildx already exists
 }
+
+console.log('Building multi-platform Docker image with tags: ', tags.join(', '));
+
+execSync(
+  `docker buildx build --platform linux/amd64,linux/arm64 ${tags.map(t => '-t ' + t).join(' ')} --push .`,
+  { stdio: 'inherit' }
+);
+
+console.log('Multi-platform build & push done.');
