@@ -290,16 +290,16 @@ export async function handleAdmin(
 
     // Start/stop IPC server
     if (Config.standalone && !standalone) {
-      Config.ipcServer = startIPCServer(queues); // switch to backend mode
-      logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), 'backend'));
+      Config.ipcServer = startIPCServer(queues); // switch to external backend mode
       pingRes = await ping();
       switchHappened = true;
     } else if (!Config.standalone && standalone) {
-      Config.ipcServer!.close(); // switch to standalone mode
-      logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), 'standalone'));
+      Config.ipcServer!.close(); // switch to standalone (internal backend) mode
       Config.ipcServer = null;
       switchHappened = true;
     }
+
+    if (switchHappened) logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), standalone)); // log mode switch
 
     // Write databse
     const db = await dbPrep(interaction);
