@@ -101,12 +101,16 @@ export async function axiosHelper(queues: CommandQueues, user: string, username:
   queueUtils.addToAll(queues, validationPayload);
 
   try {
-    await axios.put(Config.backend + '/' + validationPayload.cmd, null, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      validateStatus: (status) => status < 400,
-    });
+    await axios.put(
+      Config.backend + '/' + validationPayload.cmd,
+      {}, // empty body - EB JSON parser will not fail this way
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        validateStatus: (status) => status < 400,
+      }
+    );
   } catch {
     axiosError();
   }
