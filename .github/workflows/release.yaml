@@ -5,12 +5,17 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -38,3 +43,11 @@ jobs:
 
       - name: Release packages
         run: npm run release:all
+
+      - name: Merge main into release
+        uses: devmasx/merge-branch@1.4.0
+        with:
+          type: now
+          from_branch: main
+          target_branch: release
+          github_token: ${{ secrets.GITHUB_TOKEN }}
