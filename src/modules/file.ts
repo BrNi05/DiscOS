@@ -203,6 +203,7 @@ export async function cwdPath(fileName: string, user: string, queues: CommandQue
 }
 
 // Path input autocomplete handler
+// The value of username is indifferent (will not be shown), but certain EB implementations might require it (not to be empty)
 export async function pathAutocomplete(interaction: AutocompleteInteraction<CacheType>, queues: CommandQueues): Promise<void> {
   // Do not respond in certain situations
   if (!interaction.guild || !Config.allowedChannels.includes(interaction.channelId) || !Config.allowedUsers.includes(interaction.user.id)) {
@@ -228,7 +229,7 @@ export async function pathAutocomplete(interaction: AutocompleteInteraction<Cach
   else {
     const payload: ICommandQueueItem = {
       user: interaction.user.id,
-      username: '',
+      username: '.',
       cmd: 'pwd',
     };
 
@@ -245,7 +246,7 @@ export async function pathAutocomplete(interaction: AutocompleteInteraction<Cach
   // Find suggestions
   const payload: ICommandQueueItem = {
     user: interaction.user.id,
-    username: '', // the value of username is indifferent (will not be shown)
+    username: '.',
     cmd: `(cd ${shellEscape([currentDir])} >/dev/null 2>&1 && LC_ALL=C ls -A --group-directories-first${focusedValue ? ` | grep -F -- "${shellEscape([filter])}"` : ''} | head -n 10) || echo ''`,
   };
 

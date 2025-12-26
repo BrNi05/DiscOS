@@ -4,7 +4,8 @@ export interface ICommandQueueItem {
 
   // Guild-specific username
   // Only matters when show as part of a response to a user commands (only cosmetic)
-  // Internal commands and many admin ones have this assigned as 'root' or '', but is not important
+  // Internal commands and many admin ones have this assigned as 'root' or '.', but is not important
+  // EB implementations might require this to be non-empty, so always provide some value
   username: string;
 
   // Command to execute
