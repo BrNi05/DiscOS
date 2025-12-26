@@ -35,9 +35,9 @@ export const DB_BOOLEAN_ERR = '[DB] Database boolean fields must be true or fals
 
 // ############################################################################################################################################# //
 // Command registration - USER
-export const CMD_REG_1 = '[SLASH COMMANDS] Registered on guild (server):';
-export const CMD_REG_2 = '[SLASH COMMANDS] Failed to register on guild (server):';
-export const CMD_REG_ERR = '[SLASH COMMANDS] Error during registration:';
+export const CMD_REG_1 = '[SlashCommandRegister] Registered on guild (server):';
+export const CMD_REG_2 = '[SlashCommandRegister] Failed to register on guild (server):';
+export const CMD_REG_ERR = '[SlashCommandRegister] Error during registration:';
 
 // ############################################################################################################################################# //
 // Main command
@@ -137,8 +137,8 @@ export const MODE = 'mode';
 export const MODE_DESC = "Toggle to use an external backend or use DiscOS's own backend solution.";
 export const STANDALONE = 'standalone';
 export const STANDALONE_DESC = "True: Use DiscOS's own backend solution. False: Use an external backend.";
-export const MODE_SWITCH_LOG = (username: string, mode: string): string => {
-  return `[AdminCommand] Backend mode switched to ${mode} by ${username}.`;
+export const MODE_SWITCH_LOG = (username: string, mode: boolean): string => {
+  return `[AdminCommand] Backend mode switched to ${mode ? 'standalone' : 'external backend'} by ${username}.`;
 };
 
 // ############################################################################################################################################# //
@@ -241,7 +241,7 @@ export const USER_RATE_LIMIT =
 
 // ############################################################################################################################################# //
 // index.ts: IPC Server
-export const LISTENING = 'DiscOS IPC server is listening on ';
+export const LISTENING = '[IPCServer] DiscOS is listening on ';
 
 // ############################################################################################################################################# //
 // Module: command.ts
@@ -408,7 +408,7 @@ export const EXTERNAL_OK = 'External backend is online and responded to the heal
 export const EXTERNAL_NORESPONSE =
   'WARNING! The external backend did not respond to the health check ping. It may be offline or unreachable.';
 
-export const NETWORK_ERR = 'Network error while trying to communicate with the external backend. DiscOS will now restart...';
+export const NETWORK_ERR = '[Backend] Network error while trying to communicate with the external backend. DiscOS will now restart...';
 
 // ############################################################################################################################################# //
 // External backend specific

@@ -83,8 +83,9 @@ async function fileWrite(url: string, _path: string, payload: ICommandQueueItem)
 }
 
 // Post command to EB or execute locally
-export async function post(payload: ICommandQueueItem, b64decode: boolean, silent: boolean): Promise<AxiosResponse<any, any>> {
+export async function post(payload: ICommandQueueItem, b64decode: boolean): Promise<AxiosResponse<any, any>> {
   let res: AxiosResponse<any, any> = internalAxiosResponse('', 500); // dummy init
+  const silent = payload.silent; // used by the internal backend, the external backend uses the silent field from the payload
 
   if (Config.standalone) {
     const output = await execCommand(payload.user, payload.username, localUser(payload.user), payload.cmd, silent);
@@ -158,7 +159,7 @@ export async function ping(): Promise<string> {
 
 // Updates the external backend's database by sending the local database content
 export async function updateExternalBackendDatabase(database: DB, queues: CommandQueues): Promise<void> {
-  const validationPayload: ICommandQueueItem = { user: INTERNAL_UID, username: INTERNAL_UNAME, cmd: DB_UPDATE };
+  const validationPayload: ICommandQueueItem = { user: INTERNAL_UID, username: INTERNAL_UNAME, cmd: DB_UPDATE, silent: true };
   queueUtils.addToAll(queues, validationPayload);
 
   try {

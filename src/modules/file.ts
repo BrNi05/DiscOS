@@ -40,7 +40,8 @@ export async function read(
   path: string,
   payload: ICommandQueueItem
 ): Promise<void> {
-  const res = await post(payload, true, true);
+  payload.silent = true; // read needs to be silent
+  const res = await post(payload, true);
 
   const buffer = res.data as Buffer;
 
@@ -137,6 +138,7 @@ export async function write(
         user: interaction.user.id,
         username: discordUsername(interaction),
         cmd: `dcos write to ${path}`,
+        silent: false,
       },
       true
     )
@@ -157,7 +159,7 @@ export async function write(
 
   // Normalize line endings for text-based files
   if (languageMap[fileExt] || Config.quickView.includes(fileExt)) {
-    const normalizePayload: ICommandQueueItem = { user: payload.user, username: payload.username, cmd: `dos2unix ${path}` };
+    const normalizePayload: ICommandQueueItem = { user: payload.user, username: payload.username, cmd: `dos2unix ${path}`, silent: true };
 
     // prefixChoice: 1 - so it is treated as a watch command add added to the commandQueue (and removed later)
     await execCommand(normalizePayload, interaction, normalizePayload.cmd, username, 1, queues, true);
@@ -172,11 +174,11 @@ export async function write(
 // Falls back to CWD path on errors
 // realpath handles non existing files, but errors on non existing dirs
 export async function absPath(fileName: string, path: string, user: string, queues: CommandQueues): Promise<string> {
-  const payload: ICommandQueueItem = { user: user, username: '', cmd: `realpath ${path}` }; // the value of username is indifferent (will not be shown)
+  const payload: ICommandQueueItem = { user: user, username: '', cmd: `realpath ${path}`, silent: true }; // the value of username is indifferent (will not be shown)
 
   // Temporarily add the cmd to queues, so EB does not fails validation
   queueUtils.addToAll(queues, payload);
-  const res = await post(payload, false, true);
+  const res = await post(payload, false);
   queueUtils.removeFromAll(queues, payload);
 
   let newPath: string = (res.data as Buffer).toString('utf-8').trim();
@@ -190,11 +192,11 @@ export async function absPath(fileName: string, path: string, user: string, queu
 
 // Returns the path to the file appended with the CWD for the specific user
 export async function cwdPath(fileName: string, user: string, queues: CommandQueues): Promise<string> {
-  const payload: ICommandQueueItem = { user: user, username: '', cmd: 'pwd' }; // the value of username is indifferent (will not be shown)
+  const payload: ICommandQueueItem = { user: user, username: '', cmd: 'pwd', silent: true }; // the value of username is indifferent (will not be shown)
 
   // Temporarily add the cmd to queues, so EB does not fails validation
   queueUtils.addToAll(queues, payload);
-  const res = await post(payload, false, true);
+  const res = await post(payload, false);
   queueUtils.removeFromAll(queues, payload);
 
   const cwd: string = (res.data as Buffer).toString('utf-8').trim();
@@ -203,6 +205,7 @@ export async function cwdPath(fileName: string, user: string, queues: CommandQue
 }
 
 // Path input autocomplete handler
+// The value of username is indifferent (will not be shown), but certain EB implementations might require it (not to be empty)
 export async function pathAutocomplete(interaction: AutocompleteInteraction<CacheType>, queues: CommandQueues): Promise<void> {
   // Do not respond in certain situations
   if (!interaction.guild || !Config.allowedChannels.includes(interaction.channelId) || !Config.allowedUsers.includes(interaction.user.id)) {
@@ -228,12 +231,13 @@ export async function pathAutocomplete(interaction: AutocompleteInteraction<Cach
   else {
     const payload: ICommandQueueItem = {
       user: interaction.user.id,
-      username: '',
+      username: '.',
       cmd: 'pwd',
+      silent: true,
     };
 
     queueUtils.addToAll(queues, payload);
-    const res = await post(payload, false, true);
+    const res = await post(payload, false);
     queueUtils.removeFromAll(queues, payload);
 
     currentDir = (res.data as Buffer).toString('utf-8').trim();
@@ -245,12 +249,13 @@ export async function pathAutocomplete(interaction: AutocompleteInteraction<Cach
   // Find suggestions
   const payload: ICommandQueueItem = {
     user: interaction.user.id,
-    username: '', // the value of username is indifferent (will not be shown)
+    username: '.',
     cmd: `(cd ${shellEscape([currentDir])} >/dev/null 2>&1 && LC_ALL=C ls -A --group-directories-first${focusedValue ? ` | grep -F -- "${shellEscape([filter])}"` : ''} | head -n 10) || echo ''`,
+    silent: true,
   };
 
   queueUtils.addToAll(queues, payload);
-  const res = await post(payload, false, true);
+  const res = await post(payload, false);
   queueUtils.removeFromAll(queues, payload);
 
   const items: string[] = (res.data as Buffer)

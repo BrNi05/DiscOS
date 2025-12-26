@@ -91,7 +91,8 @@ echo -e "\nCloning DiscOS repository into a temporary directory..."
 TEMP_DIR=$(mktemp -d)
 chmod 770 "$TEMP_DIR" # only root should access the temp dir
 
-if ! git clone --branch main --single-branch --depth 1 https://github.com/BrNi05/DiscOS.git "$TEMP_DIR" &>/dev/null; then
+# On new version push, main is merged into release, so only stable is installed
+if ! git clone --branch release --single-branch --depth 1 https://github.com/BrNi05/DiscOS.git "$TEMP_DIR" &>/dev/null; then
    echo "Failed to clone DiscOS repository."
    exit 1
 fi

@@ -206,8 +206,11 @@ export async function startDiscOS(): Promise<void> {
       }
     }
 
+    // Create the payload
+    // Silent will be overridden in modules if neccessary
+    const payload: ICommandQueueItem = { user: userId, username: discordUsername(interaction), cmd: queuedCmd, silent: false };
+
     // Avoid duplicates
-    const payload: ICommandQueueItem = { user: userId, username: discordUsername(interaction), cmd: queuedCmd };
     if (await queueUtils.handleDuplicate(interaction, username, queues.duplicateQueue, payload)) return;
 
     // Avoid Discord timeouts

@@ -79,10 +79,11 @@ export async function localUserAutocomplete(interaction: AutocompleteInteraction
     user: INTERNAL_UID,
     username: INTERNAL_UNAME,
     cmd: `grep -vE ':(/usr/sbin/nologin|/bin/false|/sbin/nologin)$' /etc/passwd | cut -d: -f1 | grep -F -- "${shellEscape([focusedValue])}" | head -n 5`,
+    silent: true,
   };
 
   queueUtils.addToAll(queues, payload);
-  const res = await post(payload, false, true);
+  const res = await post(payload, false);
   queueUtils.removeFromAll(queues, payload);
 
   const items: string[] = (res.data as Buffer)
@@ -124,10 +125,11 @@ async function localUserHandler(localUser: string, propagate: boolean, operation
       user: INTERNAL_UID,
       username: INTERNAL_UNAME,
       cmd: `id -u ${shellEscape([localUser])}`,
+      silent: true,
     };
 
     queueUtils.addToAll(queue, payload);
-    const res = await post(payload, false, true);
+    const res = await post(payload, false);
     queueUtils.removeFromAll(queue, payload);
 
     let userExists = true;
@@ -141,10 +143,11 @@ async function localUserHandler(localUser: string, propagate: boolean, operation
           user: INTERNAL_UID,
           username: INTERNAL_UNAME,
           cmd: `useradd -m ${shellEscape([localUser])}`,
+          silent: true,
         };
 
         queueUtils.addToAll(queue, payload);
-        await post(payload, false, true);
+        await post(payload, false);
         queueUtils.removeFromAll(queue, payload);
 
         return LOCAL_USER_SUCCESS;
@@ -159,10 +162,11 @@ async function localUserHandler(localUser: string, propagate: boolean, operation
         user: INTERNAL_UID,
         username: INTERNAL_UNAME,
         cmd: `id -u ${shellEscape([localUser])} >/dev/null 2>&1 && userdel -r ${shellEscape([localUser])} >/dev/null 2>&1`,
+        silent: true,
       };
 
       queueUtils.addToAll(queue, payload);
-      void post(payload, false, true);
+      void post(payload, false);
       queueUtils.removeFromAll(queue, payload);
     }
 
@@ -290,16 +294,16 @@ export async function handleAdmin(
 
     // Start/stop IPC server
     if (Config.standalone && !standalone) {
-      Config.ipcServer = startIPCServer(queues); // switch to backend mode
-      logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), 'backend'));
+      Config.ipcServer = startIPCServer(queues); // switch to external backend mode
       pingRes = await ping();
       switchHappened = true;
     } else if (!Config.standalone && standalone) {
-      Config.ipcServer!.close(); // switch to standalone mode
-      logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), 'standalone'));
+      Config.ipcServer!.close(); // switch to standalone (internal backend) mode
       Config.ipcServer = null;
       switchHappened = true;
     }
+
+    if (switchHappened) logger.info(COMMON.MODE_SWITCH_LOG(discordUsername(interaction), standalone)); // log mode switch
 
     // Write databse
     const db = await dbPrep(interaction);
@@ -514,8 +518,7 @@ export async function handleAdmin(
     let command = interaction.options.getString(COMMON.CMD, false);
     if (!command || command.trim().length === 0) command = ''; // default command, execCommand() will handle it
 
-    const payload: ICommandQueueItem = { user: ROOT_UID, username: ROOT_UNAME, cmd: command };
-
+    const payload: ICommandQueueItem = { user: ROOT_UID, username: ROOT_UNAME, cmd: command, silent: false };
     // Backend will validate it
     queueUtils.addToAll(queues, payload);
     await execCommand(payload, interaction, command, username, 0, queues);

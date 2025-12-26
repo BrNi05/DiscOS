@@ -58,7 +58,8 @@ export async function execCommand(
       });
       return reply;
     } else {
-      const res = await post(payload, false, prefixChoice === 1 ? true : silent); // watch is silent, otherwise check if silent should be used
+      payload.silent = prefixChoice === 1 ? true : silent; // watch is always silent
+      const res = await post(payload, false); // watch is silent, otherwise check if silent should be used
 
       const resString: string = (res.data as Buffer).toString('utf-8').trim();
       const replyContent = resString === COMMON.BACKEND_EXEC_ERR ? COMMON.BACKEND_EXEC_ERR_OVERRIDE : resString;
