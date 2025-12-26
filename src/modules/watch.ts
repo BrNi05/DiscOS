@@ -24,7 +24,7 @@ export async function watch(
   for (let i = 0; i < repeat; i++) {
     // Precompute
     const cmd = COMMON.WATCH_CMD_BUILD(target, interval, i, repeat, username);
-    const payload: ICommandQueueItem = { user: userId, username: discordUsername(interaction), cmd: cmd };
+    const payload: ICommandQueueItem = { user: userId, username: discordUsername(interaction), cmd: cmd, silent: false };
 
     // If watch fails on the first iteration, don't break the clear logic and log the username
     if (i === 0) lastGoodReply = cmd;

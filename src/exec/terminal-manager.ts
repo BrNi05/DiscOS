@@ -33,6 +33,7 @@ async function getUserPwd(dcUid: string): Promise<string> {
   return pwd.trim();
 }
 
+// Internal backend's command execution solution
 export async function execCommand(dcUid: string, discosUser: string, localUser: string, command: string, silent: boolean): Promise<string> {
   const user = users.get(dcUid)!; // will exist due to syncing
 
@@ -97,7 +98,7 @@ export async function initTerminalsFromConfig(queues: CommandQueues): Promise<vo
 
 // Axios helper
 export async function axiosHelper(queues: CommandQueues, user: string, username: string, cmd: string): Promise<void> {
-  const validationPayload: ICommandQueueItem = { user: user, username: username, cmd: cmd };
+  const validationPayload: ICommandQueueItem = { user: user, username: username, cmd: cmd, silent: true }; // silent's value is irrelevant here
   queueUtils.addToAll(queues, validationPayload);
 
   try {

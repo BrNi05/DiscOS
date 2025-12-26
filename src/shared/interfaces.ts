@@ -10,6 +10,10 @@ export interface ICommandQueueItem {
 
   // Command to execute
   cmd: string;
+
+  // Silent flag
+  // If set, the internal / external backend should only output the exact response to the command without any additional formatting
+  silent: boolean;
 }
 
 export interface IPCResponse {
