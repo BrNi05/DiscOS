@@ -57,7 +57,7 @@
     "axios": "^1.13.2",
     "discord.js": "^14.25.1",
     "dotenv": "^17.2.3",
-    "file-type": "^21.1.1",
+    "file-type": "^22.0.0",
     "node-pty": "^1.1.0-beta43",
     "shell-escape": "^0.2.0",
     "strip-ansi": "^7.1.2",
