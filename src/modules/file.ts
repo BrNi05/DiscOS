@@ -13,7 +13,7 @@ const UNKNOWN_LANG: string = '?';
 import { Config } from '../config/config.js';
 
 // Interfaces
-import type { ICommandQueueItem, IFileWritePayload } from '../shared/interfaces.js';
+import type { ICommandQueueItem } from '../shared/interfaces.js';
 import type { CommandQueues } from '../interfaces/queues.js';
 
 // Language map
@@ -146,7 +146,7 @@ export async function write(
     return;
   }
 
-  const res = await put({ url: file.url, path: path, payload: payload } as IFileWritePayload);
+  const res = await put({ url: file.url, path: path, payload: payload });
   const resString: string = String(res.data);
   const statusCode: number = res.status;
 
